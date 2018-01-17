@@ -12,5 +12,5 @@
 */
 
 Route::get('/', function () {
-    return view('right_panel');
+    return view('layout');
 });

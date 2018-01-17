@@ -8,7 +8,7 @@
 <!DOCTYPE html>
 <html lang="{{ config('app.locale') }}">
 <head>
-  @yield('head')
+  @includeif('head')
 </head>
 
 <!-- BODY options, add following classes to body to change options
@@ -49,52 +49,7 @@
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    <ul class="nav navbar-nav d-md-down-none">
-      <li class="nav-item px-3">
-        <a class="nav-link" href="#">Dashboard</a>
-      </li>
-      <li class="nav-item px-3">
-        <a class="nav-link" href="#">Users</a>
-      </li>
-      <li class="nav-item px-3">
-        <a class="nav-link" href="#">Settings</a>
-      </li>
-    </ul>
-    <ul class="nav navbar-nav ml-auto">
-      <li class="nav-item d-md-down-none">
-        <a class="nav-link" href="#"><i class="icon-bell"></i><span class="badge badge-pill badge-danger">5</span></a>
-      </li>
-      <li class="nav-item d-md-down-none">
-        <a class="nav-link" href="#"><i class="icon-list"></i></a>
-      </li>
-      <li class="nav-item d-md-down-none">
-        <a class="nav-link" href="#"><i class="icon-location-pin"></i></a>
-      </li>
-      <li class="nav-item dropdown">
-        <a class="nav-link dropdown-toggle nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
-          <img src="img/avatars/6.jpg" class="img-avatar" alt="admin@bootstrapmaster.com">
-        </a>
-        <div class="dropdown-menu dropdown-menu-right">
-          <div class="dropdown-header text-center">
-            <strong>Account</strong>
-          </div>
-          <a class="dropdown-item" href="#"><i class="fa fa-bell-o"></i> Updates<span class="badge badge-info">42</span></a>
-          <a class="dropdown-item" href="#"><i class="fa fa-envelope-o"></i> Messages<span class="badge badge-success">42</span></a>
-          <a class="dropdown-item" href="#"><i class="fa fa-tasks"></i> Tasks<span class="badge badge-danger">42</span></a>
-          <a class="dropdown-item" href="#"><i class="fa fa-comments"></i> Comments<span class="badge badge-warning">42</span></a>
-          <div class="dropdown-header text-center">
-            <strong>Settings</strong>
-          </div>
-          <a class="dropdown-item" href="#"><i class="fa fa-user"></i> Profile</a>
-          <a class="dropdown-item" href="#"><i class="fa fa-wrench"></i> Settings</a>
-          <a class="dropdown-item" href="#"><i class="fa fa-usd"></i> Payments<span class="badge badge-secondary">42</span></a>
-          <a class="dropdown-item" href="#"><i class="fa fa-file"></i> Projects<span class="badge badge-primary">42</span></a>
-          <div class="divider"></div>
-          <a class="dropdown-item" href="#"><i class="fa fa-shield"></i> Lock Account</a>
-          <a class="dropdown-item" href="#"><i class="fa fa-lock"></i> Logout</a>
-        </div>
-      </li>
-    </ul>
+    @includeif('top_menu')
     <button class="navbar-toggler aside-menu-toggler" type="button">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -104,89 +59,7 @@
   <div class="app-body">
     <div class="sidebar">
       <nav class="sidebar-nav">
-        <ul class="nav">
-          <li class="nav-item">
-            <a class="nav-link" href="main.html"><i class="icon-speedometer"></i> Dashboard <span class="badge badge-primary">NEW</span></a>
-          </li>
-
-          <li class="nav-title">
-            UI Elements
-          </li>
-          <li class="nav-item nav-dropdown">
-            <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-puzzle"></i> Components</a>
-            <ul class="nav-dropdown-items">
-              <li class="nav-item">
-                <a class="nav-link" href="components/buttons.html"><i class="icon-puzzle"></i> Buttons</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="components/social-buttons.html"><i class="icon-puzzle"></i> Social Buttons</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="components/cards.html"><i class="icon-puzzle"></i> Cards</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="components/forms.html"><i class="icon-puzzle"></i> Forms</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="components/modals.html"><i class="icon-puzzle"></i> Modals</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="components/switches.html"><i class="icon-puzzle"></i> Switches</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="components/tables.html"><i class="icon-puzzle"></i> Tables</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="components/tabs.html"><i class="icon-puzzle"></i> Tabs</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-item nav-dropdown">
-            <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-star"></i> Icons</a>
-            <ul class="nav-dropdown-items">
-              <li class="nav-item">
-                <a class="nav-link" href="icons/font-awesome.html"><i class="icon-star"></i> Font Awesome <span class="badge badge-secondary">4.7</span></a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="icons/simple-line-icons.html"><i class="icon-star"></i> Simple Line Icons</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="widgets.html"><i class="icon-calculator"></i> Widgets <span class="badge badge-primary">NEW</span></a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="charts.html"><i class="icon-pie-chart"></i> Charts</a>
-          </li>
-          <li class="divider"></li>
-          <li class="nav-title">
-            Extras
-          </li>
-          <li class="nav-item nav-dropdown">
-            <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-star"></i> Pages</a>
-            <ul class="nav-dropdown-items">
-              <li class="nav-item">
-                <a class="nav-link" href="views/pages/login.html" target="_top"><i class="icon-star"></i> Login</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="views/pages/register.html" target="_top"><i class="icon-star"></i> Register</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="views/pages/404.html" target="_top"><i class="icon-star"></i> Error 404</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" href="views/pages/500.html" target="_top"><i class="icon-star"></i> Error 500</a>
-              </li>
-            </ul>
-          </li>
-          <li class="nav-item mt-auto">
-            <a class="nav-link nav-link-success" href="http://coreui.io" target="_top"><i class="icon-cloud-download"></i> Download CoreUI</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link nav-link-danger" href="http://coreui.io/pro/" target="_top"><i class="icon-layers"></i> Try CoreUI <strong>PRO</strong></a>
-          </li>
-
-        </ul>
+        @includeif('left_panel')
       </nav>
       <button class="sidebar-minimizer brand-minimizer" type="button"></button>
     </div>
@@ -231,7 +104,7 @@
 
       <!-- Tab panes -->
       <div class="tab-content">
-        @yield('right_panel')
+        @includeif('right_panel')
         <div class="tab-pane p-3" id="messages" role="tabpanel">
           <div class="message">
             <div class="py-3 pb-5 mr-3 float-left">
@@ -406,7 +279,7 @@
     <span class="ml-auto">Powered by <a href="http://coreui.io">CoreUI</a></span>
   </footer>
 
-@yield('javascript')
+@includeif('javascript')
 
 </body>
 </html>
