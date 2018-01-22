@@ -14,22 +14,22 @@ class CreateAuctionTable extends Migration
     public function up()
     {
         Schema::create('auctions', function (Blueprint $table) {
-            $table->increments('id');
-            $table->integer('auc',10);
-            $table->integer('item',10);
+            $table->increments('id')->unique();
+            $table->integer('auc');
+            $table->integer('item');
             $table->string('owner',20);
             $table->string('ownerRealm',20);
-            $table->integer('bid',15);
-            $table->integer('buyout',15);
-            $table->integer('quantity',5);
+            $table->integer('bid');
+            $table->integer('buyout');
+            $table->integer('quantity');
             $table->string('timeLeft',15);
-            $table->integer('rand',5);
-            $table->integer('seed',15);
-            $table->integer('context',5);
-            $table->integer('petSpeciesId',5);
-            $table->integer('petBreedId',5);
-            $table->integer('petLevel',5);
-            $table->integer('petQualityId',5);
+            $table->integer('rand');
+            $table->integer('seed');
+            $table->integer('context');
+            $table->integer('petSpeciesId');
+            $table->integer('petBreedId');
+            $table->integer('petLevel');
+            $table->integer('petQualityId');
             $table->rememberToken();
             $table->timestamps();
         });
