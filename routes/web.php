@@ -12,5 +12,6 @@
 */
 
 Route::get('/', function () {
-    return view('layout');
+    return view('comun.layout');
 });
+Route::get('/subasta','SubastaController@index');

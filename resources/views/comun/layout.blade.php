@@ -8,7 +8,7 @@
 <!DOCTYPE html>
 <html lang="{{ config('app.locale') }}">
 <head>
-  @includeif('head')
+  @includeif('comun.head')
 </head>
 
 <!-- BODY options, add following classes to body to change options
@@ -49,7 +49,7 @@
       <span class="navbar-toggler-icon"></span>
     </button>
 
-    @includeif('top_menu')
+    @includeif('comun.top_menu')
     <button class="navbar-toggler aside-menu-toggler" type="button">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -59,7 +59,7 @@
   <div class="app-body">
     <div class="sidebar">
       <nav class="sidebar-nav">
-        @includeif('left_panel')
+        @includeif('comun.left_panel')
       </nav>
       <button class="sidebar-minimizer brand-minimizer" type="button"></button>
     </div>
@@ -104,7 +104,7 @@
 
       <!-- Tab panes -->
       <div class="tab-content">
-        @includeif('right_panel')
+        @includeif('comun.right_panel')
         <div class="tab-pane p-3" id="messages" role="tabpanel">
           <div class="message">
             <div class="py-3 pb-5 mr-3 float-left">
@@ -279,7 +279,7 @@
     <span class="ml-auto">Powered by <a href="http://coreui.io">CoreUI</a></span>
   </footer>
 
-@includeif('javascript')
+@includeif('comun.javascript')
 
 </body>
 </html>
