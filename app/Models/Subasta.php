@@ -34,7 +34,7 @@ use Reliese\Database\Eloquent\Model as Eloquent;
  *
  * @package App\Models
  */
-class Subastas extends Eloquent
+class Subasta extends Eloquent
 {
 	protected $connection = 'mysql';
 	protected $table = 'subasta';

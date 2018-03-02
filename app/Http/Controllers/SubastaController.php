@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models;
+use App\Models\Urljson;
 use Illuminate\Http\Request;
 
 class SubastaController extends Controller
@@ -15,15 +15,45 @@ class SubastaController extends Controller
     public function index()
     {
         $url = "https://eu.api.battle.net/wow/auction/data/shen'dralar?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
-        $contenido = file_get_contents($url);
-        print_r($contenido);
+        $contenido = json_decode(file_get_contents($url));
 
-        $filejson = new Urljsons;
-        $filejson->url = $contenido->files->url;
-        $filejson->datenum = $contenido->files->lastModified;
-        $filejson->date = strtotime($contenido->files->lastModified);
+        $existentJson = Urljson::Datenum($contenido->files[0]->lastModified)->first();
+        if(is_null($existentJson)){
+            /*$filejson = new Urljson;
+            $filejson->url = $contenido->files[0]->url;
+            $filejson->datenum = $contenido->files[0]->lastModified;
+            $filejson->date = date("Y-m-d H:i:s",$contenido->files[0]->lastModified);
 
-        $filejson->save();
+            $filejson->save();*/
+
+            //$contenido_url = json_decode(file_get_contents($contenido->files[0]->url));
+            $client = new \GuzzleHttp\Client();
+            $res = $client->request('GET', $contenido->files[0]->url);
+            $res->getStatusCode();
+            // 200
+            $res->getHeaderLine('content-type');
+            // 'application/json; charset=utf8'
+            $contents = $res->getBody()->getContents();                
+            //$contenido_url = (string) $body;
+            $contenido_url = str_replace("\r\n", "", $contents);
+            $contenido_url = str_replace("\t", "", $contenido_url);
+            $contenido_url = trim($contenido_url,'"');
+            // '{"id": 1420053, "name": "guzzle", ...}'
+
+            /*// Send an asynchronous request.
+            $request = new \GuzzleHttp\Psr7\Request('GET', 'http://httpbin.org');
+            $promise = $client->sendAsync($request)->then(function ($response) {
+                echo 'I completed! ' . $response->getBody();
+            });
+            $promise->wait();*/
+
+            dd($contenido_url);
+
+            return 'Insertado con exito';
+        }
+        else{
+            return 'Insertado previamente';
+        }
     }
 
     /**

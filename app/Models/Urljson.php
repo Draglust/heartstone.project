@@ -45,4 +45,9 @@ class Urljson extends Model
 		'dateNum',
 		'remember_token'
 	];
+
+	public function scopeDatenum($query,$date)
+    {
+        return $query->where('datenum', '=', $date);
+    }
 }
