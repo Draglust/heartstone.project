@@ -4013,6 +4013,7 @@
             "laravel",
             "reliese"
         ]
+<<<<<<< Updated upstream
     },
     {
         "name": "guzzlehttp/promises",
@@ -4252,5 +4253,7 @@
             "rest",
             "web service"
         ]
+=======
+>>>>>>> Stashed changes
     }
 ]

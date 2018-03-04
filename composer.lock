@@ -4,7 +4,11 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
+<<<<<<< Updated upstream
     "content-hash": "5c38e5c2052e6433a8bfb8c3f9233e25",
+=======
+    "content-hash": "1eb71abe7b67e6918abbeb5c73216d86",
+>>>>>>> Stashed changes
     "packages": [
         {
             "name": "dnoegel/php-xdg-base-dir",

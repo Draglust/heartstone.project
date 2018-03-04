@@ -26,34 +26,107 @@ class SubastaController extends Controller
 
             $filejson->save();*/
 
-            //$contenido_url = json_decode(file_get_contents($contenido->files[0]->url));
-            $client = new \GuzzleHttp\Client();
-            $res = $client->request('GET', $contenido->files[0]->url);
-            $res->getStatusCode();
-            // 200
-            $res->getHeaderLine('content-type');
-            // 'application/json; charset=utf8'
-            $contents = $res->getBody()->getContents();                
-            //$contenido_url = (string) $body;
-            $contenido_url = str_replace("\r\n", "", $contents);
-            $contenido_url = str_replace("\t", "", $contenido_url);
-            $contenido_url = trim($contenido_url,'"');
-            // '{"id": 1420053, "name": "guzzle", ...}'
+            //$contenido_url = file_get_contents($contenido->files[0]->url);
 
-            /*// Send an asynchronous request.
-            $request = new \GuzzleHttp\Psr7\Request('GET', 'http://httpbin.org');
-            $promise = $client->sendAsync($request)->then(function ($response) {
-                echo 'I completed! ' . $response->getBody();
-            });
-            $promise->wait();*/
+            $contenido_url = '';
+            
+            $handle = fopen($contenido->files[0]->url, "r");
+            if ($handle) {
+                while (fgets($handle) !== false || !feof($handle)) {
+                    $line = fgets($handle);
+                    if(strstr($line, '"auc"')){
+                        $line = str_replace("\r\n",'', $line);
+                        $line = str_replace("\t",'', $line);
+                        $line = trim($line);
+                        $line = trim($line,',');
+                        $elementos_a_tratar = explode(',', $line);
+                        foreach($elementos_a_tratar as $key=> $pareja_campo_valor){
 
-            dd($contenido_url);
+                            $pareja_campo_valor = trim(str_replace('"','', $pareja_campo_valor));
+                            $pareja_campo_valor = str_replace('{','', $pareja_campo_valor);
+                            $pareja_campo_valor = str_replace('}','', $pareja_campo_valor);
+                            $pareja_campo_valor = str_replace('[','', $pareja_campo_valor);
+                            $pareja_campo_valor = str_replace(']','', $pareja_campo_valor);
+                            $valores = explode(':', $pareja_campo_valor);
+                            if(isset($valores[1])){
+                                $item_subasta[$valores[0]] = $valores[1];
+                            }
+                            else{
+                               
+                            }
+                        }
+
+                        $subasta[] = $item_subasta;
+                        unset($item_subasta);
+                    }
+                    else{
+                         
+                    }
+                    //$contenido_url .=$line;
+                }
+                fclose($handle);
+            } else {
+                dd('Error al abrir el archivo');
+            }
+
+            dd($subasta);
 
             return 'Insertado con exito';
         }
         else{
             return 'Insertado previamente';
         }
+    }
+
+    public function json_validate($string)
+    {
+        // decode the JSON data
+        $result = json_decode($string);
+
+        // switch and check possible JSON errors
+        switch (json_last_error()) {
+            case JSON_ERROR_NONE:
+                $error = ''; // JSON is valid // No error has occurred
+                break;
+            case JSON_ERROR_DEPTH:
+                $error = 'The maximum stack depth has been exceeded.';
+                break;
+            case JSON_ERROR_STATE_MISMATCH:
+                $error = 'Invalid or malformed JSON.';
+                break;
+            case JSON_ERROR_CTRL_CHAR:
+                $error = 'Control character error, possibly incorrectly encoded.';
+                break;
+            case JSON_ERROR_SYNTAX:
+                $error = 'Syntax error, malformed JSON.';
+                break;
+            // PHP >= 5.3.3
+            case JSON_ERROR_UTF8:
+                $error = 'Malformed UTF-8 characters, possibly incorrectly encoded.';
+                break;
+            // PHP >= 5.5.0
+            case JSON_ERROR_RECURSION:
+                $error = 'One or more recursive references in the value to be encoded.';
+                break;
+            // PHP >= 5.5.0
+            case JSON_ERROR_INF_OR_NAN:
+                $error = 'One or more NAN or INF values in the value to be encoded.';
+                break;
+            case JSON_ERROR_UNSUPPORTED_TYPE:
+                $error = 'A value of a type that cannot be encoded was given.';
+                break;
+            default:
+                $error = 'Unknown JSON error occured.';
+                break;
+        }
+
+        if ($error !== '') {
+            // throw the Exception or exit // or whatever :)
+            exit($error);
+        }
+
+        // everything is OK
+        return $result;
     }
 
     /**
