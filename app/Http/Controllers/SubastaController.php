@@ -26,52 +26,14 @@ class SubastaController extends Controller
 
             $filejson->save();*/
 
-            //$contenido_url = file_get_contents($contenido->files[0]->url);
+            $subastas = $this->getAuctions($contenido->files[0]->url);
 
-            $contenido_url = '';
-            
-            $handle = fopen($contenido->files[0]->url, "r");
-            if ($handle) {
-                while (fgets($handle) !== false || !feof($handle)) {
-                    $line = fgets($handle);
-                    if(strstr($line, '"auc"')){
-                        $line = str_replace("\r\n",'', $line);
-                        $line = str_replace("\t",'', $line);
-                        $line = trim($line);
-                        $line = trim($line,',');
-                        $elementos_a_tratar = explode(',', $line);
-                        foreach($elementos_a_tratar as $key=> $pareja_campo_valor){
-
-                            $pareja_campo_valor = trim(str_replace('"','', $pareja_campo_valor));
-                            $pareja_campo_valor = str_replace('{','', $pareja_campo_valor);
-                            $pareja_campo_valor = str_replace('}','', $pareja_campo_valor);
-                            $pareja_campo_valor = str_replace('[','', $pareja_campo_valor);
-                            $pareja_campo_valor = str_replace(']','', $pareja_campo_valor);
-                            $valores = explode(':', $pareja_campo_valor);
-                            if(isset($valores[1])){
-                                $item_subasta[$valores[0]] = $valores[1];
-                            }
-                            else{
-                               
-                            }
-                        }
-
-                        $subasta[] = $item_subasta;
-                        unset($item_subasta);
-                    }
-                    else{
-                         
-                    }
-                    //$contenido_url .=$line;
+            foreach ($subastas as $key => $valueSubasta) {
+                if(!isset($item[$valueSubasta['item']])){
+                    $item[$valueSubasta['item']] = 0;
                 }
-                fclose($handle);
-            } else {
-                dd('Error al abrir el archivo');
+                $item[$valueSubasta['item']] += $valueSubasta['buyout'];
             }
-
-            dd($subasta);
-
-            return 'Insertado con exito';
         }
         else{
             return 'Insertado previamente';
@@ -127,6 +89,57 @@ class SubastaController extends Controller
 
         // everything is OK
         return $result;
+    }
+
+    /**
+     * [Funcion para obtener el json con subastas y devolver un array con las mismas]
+     * @param  [string] $url [URL con las subastas]
+     * @return [array]      [Array con todas las subastas]
+     */
+    public function getAuctions($url){
+        $contenido_url = '';
+            
+        $handle = fopen($url, "r");
+        if ($handle) {
+            while (fgets($handle) !== false || !feof($handle)) {
+                $line = fgets($handle);
+                if(strstr($line, '"auc"')){
+                    $line = str_replace("\r\n",'', $line);
+                    $line = str_replace("\t",'', $line);
+                    $line = trim($line);
+                    $line = trim($line,',');
+                    $elementos_a_tratar = explode(',', $line);
+                    foreach($elementos_a_tratar as $key=> $pareja_campo_valor){
+
+                        $pareja_campo_valor = trim(str_replace('"','', $pareja_campo_valor));
+                        $pareja_campo_valor = str_replace('{','', $pareja_campo_valor);
+                        $pareja_campo_valor = str_replace('}','', $pareja_campo_valor);
+                        $pareja_campo_valor = str_replace('[','', $pareja_campo_valor);
+                        $pareja_campo_valor = str_replace(']','', $pareja_campo_valor);
+                        $valores = explode(':', $pareja_campo_valor);
+                        if(isset($valores[1])){
+                            $item_subasta[$valores[0]] = $valores[1];
+                        }
+                        else{
+                           
+                        }
+                    }
+
+                    $subasta[] = $item_subasta;
+                    unset($item_subasta);
+                }
+                else{
+                     
+                }
+                //$contenido_url .=$line;
+            endwhile;
+            fclose($handle);
+        } else {
+            dd('Error al abrir el archivo');
+        }
+
+        return $subasta;
+
     }
 
     /**
