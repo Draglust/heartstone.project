@@ -30,14 +30,40 @@ class SubastaController extends Controller
 
             foreach ($subastas as $key => $valueSubasta) {
                 if(!isset($item[$valueSubasta['item']])){
-                    $item[$valueSubasta['item']] = 0;
+                    $item_valores[$valueSubasta['item']] = 0;
+                    $item_precios[$valueSubasta['item']] = 0;
                 }
-                $item[$valueSubasta['item']] += $valueSubasta['buyout'];
+                $item_valores[$valueSubasta['item']] += $valueSubasta['buyout'];
+                $item_precios[$valueSubasta['item']] += $valueSubasta['quantity'];
+            }
+            foreach ($item_valores as $keyv => $valuev) {
+                $precio_medio[$keyv] = $item_valores[$keyv] / $item_precios[$keyv];
+            }
+
+            foreach ($subastas as $key => $nValueSubasta) {
+                if($precio_medio[$nValueSubasta['item']] < ($nValueSubasta['buyout'] / $nValueSubasta['quantity'])*(0.75) ){
+                    $subasta_valida[] = $nValueSubasta;
+                }
+                elseif($precio_medio[$nValueSubasta['item']] > ($nValueSubasta['buyout'] / $nValueSubasta['quantity'])*(0.75) ){
+                    //Sobreprecio,ignorar
+                }
+                else{
+                    if(!isset($item[$nValueSubasta['item']])){
+                        $item_valores_real[$nValueSubasta['item']] = 0;
+                        $item_precios_real[$nValueSubasta['item']] = 0;
+                    }   
+                    $item_valores_real[$nValueSubasta['item']] += $nValueSubasta['buyout'];
+                    $item_precios_real[$nValueSubasta['item']] += $nValueSubasta['quantity'];
+                }
+            }
+            foreach ($item_valores_real as $keyR => $valueR) {
+                $precio_medio_real[$keyR] = $item_valores_real[$keyR] / $item_precios_real[$keyR];
             }
         }
         else{
             return 'Insertado previamente';
         }
+        var_dump($precio_medio_real);
     }
 
     public function json_validate($string)
@@ -101,7 +127,7 @@ class SubastaController extends Controller
             
         $handle = fopen($url, "r");
         if ($handle) {
-            while (fgets($handle) !== false || !feof($handle)) {
+            while (fgets($handle) !== false || !feof($handle)):
                 $line = fgets($handle);
                 if(strstr($line, '"auc"')){
                     $line = str_replace("\r\n",'', $line);
