@@ -2,7 +2,7 @@
 
 /**
  * Created by Reliese Model.
- * Date: Sun, 25 Feb 2018 10:49:49 +0000.
+ * Date: Mon, 23 Apr 2018 20:35:08 +0000.
  */
 
 namespace App\Models;
@@ -10,30 +10,29 @@ namespace App\Models;
 use Reliese\Database\Eloquent\Model as Eloquent;
 
 /**
- * Class Objeto
+ * Class ClassSubclass
  * 
+ * @property int $Class_id
+ * @property int $Subclass_id
  * @property int $Id
- * @property string $Nombre
- * @property string $Descripcion
- * @property string $Icono
  *
  * @package App\Models
  */
-class Objeto extends Eloquent
+class ClassSubclass extends Eloquent
 {
-	protected $connection = 'mysql';
-	protected $table = 'objeto';
+	protected $table = 'class_subclass';
 	protected $primaryKey = 'Id';
 	public $incrementing = false;
 	public $timestamps = false;
 
 	protected $casts = [
+		'Class_id' => 'int',
+		'Subclass_id' => 'int',
 		'Id' => 'int'
 	];
 
 	protected $fillable = [
-		'Nombre',
-		'Descripcion',
-		'Icono'
+		'Class_id',
+		'Subclass_id'
 	];
 }

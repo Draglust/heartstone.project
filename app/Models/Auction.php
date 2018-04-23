@@ -2,7 +2,7 @@
 
 /**
  * Created by Reliese Model.
- * Date: Sat, 10 Feb 2018 00:24:00 +0000.
+ * Date: Mon, 23 Apr 2018 20:35:08 +0000.
  */
 
 namespace App\Models;
@@ -12,68 +12,44 @@ use Reliese\Database\Eloquent\Model as Eloquent;
 /**
  * Class Auction
  * 
- * @property int $id
- * @property int $auc
- * @property int $item
- * @property string $owner
- * @property string $ownerRealm
- * @property int $bid
- * @property int $buyout
- * @property int $quantity
- * @property string $timeLeft
- * @property int $rand
- * @property int $seed
- * @property int $context
- * @property int $petSpeciesId
- * @property int $petBreedId
- * @property int $petLevel
- * @property int $petQualityId
- * @property string $remember_token
- * @property int $dateJsonId
+ * @property int $Id
+ * @property int $Apuesta
+ * @property int $Compra
+ * @property int $Cantidad
+ * @property string $Tiempo_restante
+ * @property int $Json_id
+ * @property int $Owner_id
+ * @property int $Realm_id
+ * @property int $Item_id
  *
  * @package App\Models
  */
 class Auction extends Eloquent
 {
+	protected $table = 'auction';
+	protected $primaryKey = 'Id';
+	public $incrementing = false;
 	public $timestamps = false;
 
 	protected $casts = [
-		'auc' => 'int',
-		'item' => 'int',
-		'bid' => 'int',
-		'buyout' => 'int',
-		'quantity' => 'int',
-		'rand' => 'int',
-		'seed' => 'int',
-		'context' => 'int',
-		'petSpeciesId' => 'int',
-		'petBreedId' => 'int',
-		'petLevel' => 'int',
-		'petQualityId' => 'int',
-		'dateJsonId' => 'int'
-	];
-
-	protected $hidden = [
-		'remember_token'
+		'Id' => 'int',
+		'Apuesta' => 'int',
+		'Compra' => 'int',
+		'Cantidad' => 'int',
+		'Json_id' => 'int',
+		'Owner_id' => 'int',
+		'Realm_id' => 'int',
+		'Item_id' => 'int'
 	];
 
 	protected $fillable = [
-		'auc',
-		'item',
-		'owner',
-		'ownerRealm',
-		'bid',
-		'buyout',
-		'quantity',
-		'timeLeft',
-		'rand',
-		'seed',
-		'context',
-		'petSpeciesId',
-		'petBreedId',
-		'petLevel',
-		'petQualityId',
-		'remember_token',
-		'dateJsonId'
+		'Apuesta',
+		'Compra',
+		'Cantidad',
+		'Tiempo_restante',
+		'Json_id',
+		'Owner_id',
+		'Realm_id',
+		'Item_id'
 	];
 }

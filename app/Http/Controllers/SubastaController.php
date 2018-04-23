@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Urljson;
+use App\Models\Json;
 use Illuminate\Http\Request;
 
 class SubastaController extends Controller
@@ -12,14 +12,56 @@ class SubastaController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function getJson()
     {
         $url = "https://eu.api.battle.net/wow/auction/data/shen'dralar?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
         $contenido = json_decode(file_get_contents($url));
-
-        $existentJson = Urljson::Datenum($contenido->files[0]->lastModified)->first();
+        $existentJson = Json::Fecha_numerica($contenido->files[0]->lastModified)->first();
         if(is_null($existentJson)){
-            /*$filejson = new Urljson;
+            $filejson = new Json;
+            $filejson->url = $contenido->files[0]->url;
+            $filejson->fecha_numerica = $contenido->files[0]->lastModified;
+            $filejson->fecha = date("Y-m-d H:i:s",$contenido->files[0]->lastModified);
+
+            $filejson->save();
+        }
+        return $this->getAuctions($contenido->files[0]->url);
+    }
+    
+    public function getRealms($subastas){
+        foreach ($subastas as $key => $valueSubasta) {
+            $existentRealm = Realm::Nombre($valueSubasta['ownerRealm']);
+            if(is_null($existentRealm)){
+                $newRealm = new Realm;
+                $newRealm->Nombre = $valueSubasta['ownerRealm'];
+                $newRealm->save();
+            }
+        }
+    }
+    
+    public function getOwners($subastas){
+        foreach ($subastas as $key => $valueSubasta) {
+            $existentOwner = Owner::Nombre($valueSubasta['ownerRealm']);
+            if(is_null($existentOwner)){
+                $newOwner = new Owner;
+                $newOwner->Nombre = $valueSubasta['ownerRealm'];
+                $newOwner->save();
+            }
+        }
+    }
+    
+    public function index()
+    {
+        $json = $this->getJson();
+        $owners = $this->getRealms($json);
+        
+        die('final');
+        $url = "https://eu.api.battle.net/wow/auction/data/shen'dralar?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
+        $contenido = json_decode(file_get_contents($url));
+
+        $existentJson = Json::Fecha_numerica($contenido->files[0]->lastModified)->first();
+        if(is_null($existentJson)){
+            /*$filejson = new Json;
             $filejson->url = $contenido->files[0]->url;
             $filejson->datenum = $contenido->files[0]->lastModified;
             $filejson->date = date("Y-m-d H:i:s",$contenido->files[0]->lastModified);
