@@ -15,3 +15,4 @@ Route::get('/', function () {
     return view('comun.layout');
 });
 Route::get('/subasta','SubastaController@index');
+Route::get('/extract','ExtractController@treatJson');

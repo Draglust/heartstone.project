@@ -40,4 +40,8 @@ class Json extends Eloquent {
         return $query->where('Fecha_numerica', '=', $date);
     }
 
+    public function scopeFecha($query, $date) {
+        return $query->where('Fecha', '=', $date);
+    }
+
 }

@@ -51,4 +51,16 @@ class Item extends Eloquent
 		'Class_Subclass_Id',
 		'Tipo_inventario'
 	];
+
+    public function scopeNombreIsNull($query) {
+        return $query->whereNull('Nombre');
+    }
+
+    public function scopeId($query,$id) {
+        return $query->where('Id','=',$id);
+    }
+
+    public function scopeItem_Fecha_Faccion($query, $item, $fecha, $faccion) {
+        return $query->where('Item_id', '=', $item)->where('Fecha', '=', $fecha)->where('Faccion', '=', $faccion);
+    }
 }
