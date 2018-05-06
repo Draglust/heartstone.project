@@ -13,6 +13,12 @@ use Illuminate\Http\Request;
 class ExtractController extends Controller {
 
     public function treatJson() {
+        /*echo "<div class='progress'>
+          <div id='barra' class='progress-bar progress-bar-success' role='progressbar' aria-valuenow='70'
+          aria-valuemin='0' aria-valuemax='100' style='width:1%'>
+            0%
+          </div>
+        </div>";*/
         $rawJson = $this->getJson();
         if ($rawJson) {
             $rawSubastas = $this->getSubastas($rawJson['url']);
@@ -49,16 +55,33 @@ class ExtractController extends Controller {
 
         if (count($objetosEncontrados) > 0) {
             foreach ($objetosEncontrados as $keyObjeto => $objeto) {
-                $contenido = file_get_contents("http://es.wowhead.com/item={$objeto['id']}");
+                set_time_limit(15);
+                $contenido = file_get_contents("http://es.wowhead.com/item={$objeto['Id']}");
                 if ($contenido) {
-                    $preg = "_" . $objeto['id'] . "=(.*);";
+                    $preg = "_\[" . $objeto['Id'] . "\]=(.*);";
                     preg_match_all("/$preg/Um", $contenido, $salida, PREG_PATTERN_ORDER);
                     if (isset($salida[1][0])) {
-                        $var = explode(',', $salida[1][0]);
+                        $jsonWeb = json_decode($salida[1][0],TRUE);
+                        if(isset($jsonWeb['name_eses'])) {
+                            $nombre = utf8_encode($jsonWeb['name_eses']);
+                        }
+                        if(isset($jsonWeb['quality'])) {
+                            $calidad = $jsonWeb['quality'];
+                        }
+                        if(isset($jsonWeb['icon'])) {
+                            $icono = $jsonWeb['icon'];
+                        }
+                        if(isset($jsonWeb['reqlevel'])) {
+                            $icono = $jsonWeb['reqlevel'];
+                        }
+                        else {
+                            $nivelRequerido = 0;
+                        }
+                        /*$var = explode(',', $salida[1][0]);
                         foreach ($var as $keyVar => $valores) {
-                            if (strpos($valores, 'name_eses')) {
+                            /*if (strpos($valores, 'name_eses')) {
                                 $jsonNombre = explode(':', $valores);
-                                $nombre = html_entity_decode(str_replace('"', '', $jsonNombre[1]));
+                                $nombre = utf8_decode(html_entity_decode(str_replace('"', '', $jsonNombre[1])));
                             }
                             if (strpos($valores, 'quality')) {
                                 $jsonCalidad = explode(':', $valores);
@@ -71,16 +94,20 @@ class ExtractController extends Controller {
                             if (strpos($valores, 'reqlevel')) {
                                 $jsonNivelReq = explode(':', $valores);
                                 $nivelRequerido = str_replace('"', '', $jsonNivelReq[1]);
+                                $nivelRequerido = str_replace('}', '', $nivelRequerido);
                             }
-                        }
+                        }*/
                         unset($salida);
                     } else {
+                        print_r($preg);
+                        print_r($contenido);
                         dd('Error en la web del objeto');
                     }
 
                     preg_match_all("/Nivel de objeto <!--ilvl-->(.*)<\/span>/Um", $contenido, $salida, PREG_PATTERN_ORDER);
                     if (isset($salida[1][0])) {
                         $nivelObjeto = $salida[1][0];
+                        $nivelObjeto = str_replace('+','', $nivelObjeto);
                         unset($salida);
                     } else {
                         dd('Error en el nivel del objeto');
@@ -97,12 +124,28 @@ class ExtractController extends Controller {
                     if (strpos($contenido, 'World of Warcraft Clásico.')) {
                         $expansion = 'Clásico';
                     } else {
-                        preg_match_all("/World of Warcraft:(.*)\./Um", $contenido, $salida, PREG_PATTERN_ORDER);
-                        if (isset($salida[1][0])) {
-                            $expansion = html_entity_decode($salida[1][0]);
-                            unset($salida);
-                        } else {
-                            dd('Error en la expansion del objeto');
+                        preg_match_all("/<meta name=\"keywords\" content=\"(.*)\">/Um", $contenido, $salida3, PREG_PATTERN_ORDER);
+                        if (isset($salida3[1][0])) {
+                            if (strpos($contenido, 'Clásico')) {
+                                $expansion = 'Clásico';
+                            }
+                        }
+                        else {
+                            preg_match_all("/World of Warcraft:(.*)\./Um", $contenido, $salida, PREG_PATTERN_ORDER);
+                            if (isset($salida[1][0])) {
+                                $expansion = html_entity_decode($salida[1][0]);
+                                unset($salida);
+                            } else {
+                                preg_match_all("/<meta name=\"keywords\" content=\"(.*)\">/Um", $contenido, $salida2, PREG_PATTERN_ORDER);
+                                if (isset($salida2[1][0])) {
+                                    if (strpos($contenido, 'The Burning Crusade')) {
+                                        $expansion = 'The Burning Crusade';
+                                    }
+                                } else {
+                                    print_r($contenido);
+                                    dd('Error en la expansion del objeto');
+                                }
+                            }
                         }
                     }
 
@@ -111,15 +154,27 @@ class ExtractController extends Controller {
                         $rawTipo = explode(',', $salida[1][0]);
                         $clase = $rawTipo[2];
                         $subclase = $rawTipo[3];
+                        $subclaseNombre = '';
                         unset($salida);
                         foreach ($jsonClasses['classes'] as $keyClass => $valueClass) {
                             if ($valueClass['class'] == $clase) {
                                 $claseNombre = $valueClass['name'];
                                 foreach ($valueClass['subclasses'] as $keySub => $valueSub) {
-                                    if ($valueSub['subclass'] == $subclase) {
-                                        $subclaseNombre = $valueSub['name'];
-                                        break 2;
+                                    if(isset($valueSub['subclass'])){
+                                        if ($valueSub['subclass'] == $subclase) {
+                                            $subclaseNombre = $valueSub['name'];
+                                            break 2;
+                                        }
                                     }
+                                    else{
+                                        foreach($valueSub as $nValueSub){
+                                            if ($nValueSub['subclass'] == $subclase) {
+                                                $subclaseNombre = $valueSub['name'];
+                                                break 2;
+                                            }
+                                        }
+                                    }
+
                                 }
                             }
                         }
@@ -129,9 +184,9 @@ class ExtractController extends Controller {
 
                     if (!in_array($clase . '_' . $subclase, $arrayClaseSubclase)) {
                         if (isset($clase) && isset($subclase)) {
-                            $classSubclassExists = Class_Subclass::Clase_Subclase($clase, $subclase)->get() - toArray();
+                            $classSubclassExists = ClassSubclass::Clase_Subclase($clase, $subclase)->get()->toArray();
                             if (!$classSubclassExists) {
-                                $newClassSubclass = new Class_Subclass;
+                                $newClassSubclass = new ClassSubclass;
                                 $newClassSubclass->clase_id = $clase;
                                 $newClassSubclass->clase_nombre = $claseNombre;
                                 $newClassSubclass->subclase_id = $subclase;
@@ -140,29 +195,36 @@ class ExtractController extends Controller {
                                 if(!$saved){
                                     dd('Error al guardar ClassSubclass');
                                 }
-                                $classSubclassExists[0]['id'] = $newClassSubclass->id;
+                                $classSubclassExists[0]['Id'] = $newClassSubclass->id;
                             }
                             $arrayClaseSubclase[] = $clase . '_' . $subclase;
-                            $arrayIdClaseSubclase[$clase . '_' . $subclase] = $classSubclassExists[0]['id'];
+                            $arrayIdClaseSubclase[$clase . '_' . $subclase] = $classSubclassExists[0]['Id'];
                         }
                     }
 
                     if (isset($nombre) && isset($descripcion) && isset($calidad) && isset($icono) && isset($nivelRequerido) && isset($nivelObjeto) && isset($expansion)) {
-                        $newItem = new Item;
-                        $newItem->nombre = $nombre;
-                        $newItem->descripcion = $descripcion;
-                        $newItem->calidad = $calidad;
-                        $newItem->icono = $icono;
-                        $newItem->nivel_requerido = $nivelRequerido;
-                        $newItem->nivel_objeto = $nivelObjeto;
-                        $newItem->expansion = $expansion;
-                        $newItem->class_subclass_id = $classSubclassExists[0]['id'];
-                        $saved = $newItem->save();
+                        $updateItem = Item::find($objeto['Id']);
+                        $updateItem->nombre = $nombre;
+                        $updateItem->descripcion = $descripcion;
+                        $updateItem->calidad = $calidad;
+                        $updateItem->icono = $icono;
+                        $updateItem->nivel_requerido = $nivelRequerido;
+                        $updateItem->nivel_objeto = $nivelObjeto;
+                        $updateItem->expansion = $expansion;
+                        $updateItem->class_subclass_id = $classSubclassExists[0]['Id'];
+                        $saved = $updateItem->save();
                         if(!$saved){
                             dd('Error al guardar Item');
                         }
+                        unset($nombre);
+                        unset($descripcion);
+                        unset($calidad);
+                        unset($icono);
+                        unset($nivelRequerido);
+                        unset($nivelObjeto);
+                        unset($expansion);
                     }
-                }
+            }
             }
         }
     }
@@ -178,7 +240,7 @@ class ExtractController extends Controller {
             $newJson = new Json;
             $newJson->url = $contenido['files'][0]['url'];
             $newJson->fecha_numerica = $contenido['files'][0]['lastModified'];
-            $newJson->fecha = date('Y-m-d H:i:s', $contenido['files'][0]['lastModified']);
+            $newJson->fecha = date('Y-m-d H:i:s', $contenido['files'][0]['lastModified']/1000);
             $saved = $newJson->save();
             if(!$saved){
                 dd('Error al guardar Json');
@@ -204,6 +266,20 @@ class ExtractController extends Controller {
         $arrayItems = array();
         $arrayRealms = array();
         $json_id = $datos['id'];
+        $totalSubastas = count($subastas);
+        $cadaIteracion = 0;
+
+        $todosRealms = Realm::all()->toArray();
+        foreach($todosRealms as $reino){
+            $arrayRealms[$reino['Nombre']] = $reino['Id'];
+        }
+
+        $arrayOwners = array();
+        $todosLosOwner = Owner::all()->toArray();
+        foreach($todosLosOwner as $owner){
+            $arrayOwners[$owner['Nombre']] = $owner['Faccion'];
+        }
+
         foreach ($subastas as $key => $subasta) {
             $subastas[$key]['idJson'] = $json_id;
             /**
@@ -214,7 +290,11 @@ class ExtractController extends Controller {
              * [Guardado del reino si no existe]
              * [Usamos un array para la lista de reinos del json actual]
              */
-            if (!in_array($subasta['ownerRealm'], $arrayRealms)) {
+
+            $subastas[$key]['reinoReal'] = $arrayRealms[$subasta['ownerRealm']];
+
+
+            /*if (!in_array($subasta['ownerRealm'], $arrayRealms)) {
                 $realmExists = Realm::Nombre($subasta['ownerRealm'])->get()->toArray();
                 if (!$realmExists) {
                     $newRealm = new Realm;
@@ -229,11 +309,22 @@ class ExtractController extends Controller {
             }
             if(isset($realmExists[0]['Id'])) {
                 $subastas[$key]['reinoReal'] = $realmExists[0]['Id'];
-            }else{dd($realmExists);}
+            }else{dd($realmExists);}*/
+
             /**
              * [Comprobamos la facción a la que pertenece la subasta]
              */
-            $retornoFaccion = $this->getFaction($subasta);
+            if(isset($arrayOwners[$subasta['owner']])){
+                $retornoFaccion['faction'] = $arrayOwners[$subasta['owner']];
+            }
+            else {
+                $retornoFaccion = $this->getFaction($subasta, $arrayRealms);
+                $arrayOwners[$subasta['owner']] = $retornoFaccion['idOwner'];
+                print_r($subasta['owner']);
+                print_r($retornoFaccion['idOwner']);
+                print_r($arrayOwners[$subasta['owner']]);
+            }
+
             /**
              * [Si no encontramos facción para una subasta]
              * [Quizás hemos llegado al limite de peticiones]
@@ -241,35 +332,21 @@ class ExtractController extends Controller {
              */
             if (!$retornoFaccion) {
                 //dd('No hay faccion disponible');
-                $retornoFaccion['faction'] = -1;
+                $retornoFaccion['faction'] = 3;
             }
             $faccionSubasta = $retornoFaccion['faction'];
             $subastas[$key]['faccionReal'] = $faccionSubasta;
-            /**
-             * [Guardado del objeto si no existe]
-             * [Usamos un array para la lista de objetos del json actual]
-             */
-            if (!in_array($subasta['item'], $arrayItems)) {
-                $itemExists = Item::Id($subasta['item'])->get()->toArray();
-                if (!$itemExists) {
-                    $newItem = new Item;
-                    $newItem->Id = $subasta['item'];
-                    $saved = $newItem->save();
-                    if(!$saved){
-                        dd('Error al guardar Item');
-                    }
-                }
-                $arrayItems[] = $subasta['item'];
-            }
+
             /**
              * [Inicializamos array de un objeto si no existe]
-             */
+             */<
             if (!isset($items[$faccionSubasta][$subasta['item']])) {
                 $items[$faccionSubasta][$subasta['item']] = array();
                 $items[$faccionSubasta][$subasta['item']]['maximo'] = 0;
                 $items[$faccionSubasta][$subasta['item']]['calculo_pmp'] = 0;
                 $items[$faccionSubasta][$subasta['item']]['total_items'] = 0;
             }
+
             /**
              * [Si existe precio de compra, calculamos máximo]
              */
@@ -294,16 +371,63 @@ class ExtractController extends Controller {
                  */
                 $items[$faccionSubasta][$subasta['item']]['calculo_pmp'] += $subasta['quantity'] * $subasta['buyout'];
                 $items[$faccionSubasta][$subasta['item']]['total_items'] += $subasta['quantity'];
+
+                /**
+                 * [Guardado del objeto si no existe]
+                 * [Usamos un array para la lista de objetos del json actual]
+                 */
+                $todosLosItems[] = $subasta['item'];
+                /*if (!in_array($subasta['item'], $arrayItems)) {
+                    $itemExists = Item::Id($subasta['item'])->get()->toArray();
+                    if (!$itemExists) {
+                        $newItem = new Item;
+                        $newItem->Id = $subasta['item'];
+                        $saved = $newItem->save();
+                        if(!$saved){
+                            dd('Error al guardar Item');
+                        }
+                    }
+                    $arrayItems[] = $subasta['item'];
+                }*/
+                break;
             } else {
                 /**
                  * [De momento no usaremos las subastas sin precio de compra]
                  */
                 unset($subastas[$key]);
             }
+            echo '<pre>';
+            $cadaIteracion ++;
+            print_r($items);
+            echo $cadaIteracion.'/'.$totalSubastas.'<br>';
+            echo '</pre>';
+            //dd($items);
+        }
+
+        echo 'Todos los objetos';
+        dd($items);
+        $todosLosItemsBD = Item::all()->toArray();
+
+        foreach($todosLosItems as $keyItemsJson => $itemJson){
+            set_time_limit(15);
+            if(!in_array($itemJson['Id'],$todosLosItemsBD)){
+                $itemFaltante[] = $itemJson['Id'];
+            }
+        }
+
+        foreach($itemFaltante as $itemAInsertar){
+            set_time_limit(15);
+            $newItem = new Item;
+            $newItem->Id = $itemAInsertar;
+            $saved = $newItem->save();
+            if(!$saved){
+                dd('Error al guardar Item');
+            }
         }
         /**
          * [Calculamos el precio medio ponderado por objeto]
          */
+
         foreach ($items as $keyFaccion => $itemElement) {
             foreach ($itemElement as $keyItem => $item) {
                 $items[$keyFaccion][$keyItem]['pmp'] = $item['calculo_pmp'] / $item['total_items'];
@@ -344,7 +468,8 @@ class ExtractController extends Controller {
         return TRUE;
     }
 
-    public function getFaction($subasta) {
+    public function getFaction($subasta,$arrayRealms) {
+
         $ownerRealm = str_replace("'", "", $subasta['ownerRealm']);
         /**
          * [Para la búsqueda de faccion por web]
@@ -352,17 +477,35 @@ class ExtractController extends Controller {
          */
         $url_web = "https://worldofwarcraft.com/es-es/character/{$ownerRealm}/{$subasta['owner']}";
         $url = "https://eu.api.battle.net/wow/character/{$subasta['ownerRealm']}/{$subasta['owner']}?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
-        $faccion = json_decode(@file_get_contents($url), TRUE);
+        $faccionExtraida = json_decode(@file_get_contents($url), TRUE);
 
+        $faccion = $faccionExtraida;
+        unset($faccionExtraida);
+
+        echo $url.'<br>';
         //preg_match_all("/Nivel de objeto <!--ilvl-->(.*)<\/span>/Um", $contenido, $salida, PREG_PATTERN_ORDER);
         /**
          * [Si ha array de retorno, lo devolvemos, si no devolvemos FALSE]
          */
-        if (isset($faccion['faction'])) {
-            return $faccion;
-        }
 
-        return FALSE;
+        $newOwner = new Owner;
+        $newOwner->nombre = $subasta['owner'];
+        $newOwner->realm_id = $arrayRealms[$subasta['ownerRealm']];
+        if (!isset($faccion['faction'])) {
+            $faccion['faction'] = 3;
+            $newOwner->faccion = $faccion['faction'];
+        }
+        else {
+            $newOwner->faccion = $faccion['faction'];
+        }
+        $saved = $newOwner->save();
+        if(!$saved){
+            dd('Error al guardar Owner');
+        }
+        $faccion['idOwner'] = $newOwner->id;
+
+        return $faccion;
+
     }
 
     public function putSubastas($precios, $subastas) {

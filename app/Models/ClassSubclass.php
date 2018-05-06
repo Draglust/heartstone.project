@@ -37,6 +37,6 @@ class ClassSubclass extends Eloquent
 	];
 
     public function scopeClase_Subclase($query,$clase,$subclase) {
-        return $query->where('Clase_id','=',$clase)->where('Sublase_id','=',$subclase);
+        return $query->where('Clase_id','=',$clase)->where('Subclase_id','=',$subclase);
     }
 }
