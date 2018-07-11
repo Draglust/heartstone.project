@@ -339,7 +339,7 @@ class ExtractController extends Controller {
 
             /**
              * [Inicializamos array de un objeto si no existe]
-             */<
+             */
             if (!isset($items[$faccionSubasta][$subasta['item']])) {
                 $items[$faccionSubasta][$subasta['item']] = array();
                 $items[$faccionSubasta][$subasta['item']]['maximo'] = 0;
