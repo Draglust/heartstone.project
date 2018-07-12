@@ -23,16 +23,26 @@ class ServiceItem extends Service
         $jsonClasses = json_decode(file_get_contents("https://eu.api.battle.net/wow/data/item/classes?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek"), TRUE);
 
         if (count($objetosEncontrados) > 0) {
-            foreach ($objetosEncontrados as $keyObjeto => $objeto) {
-                set_time_limit(15);
-                $contenido = file_get_contents("http://es.wowhead.com/item={$objeto['Id']}");
+                    foreach ($objetosEncontrados as $keyObjeto => $objeto) {
+                        set_time_limit(15);
+                        $context = stream_context_create(
+            array(
+                'http' => array(
+                    'max_redirects' => 101
+                    //'follow_location' => false
+                )
+            )
+        );
+        $contenido = file_get_contents("http://es.wowhead.com/item={$objeto['Id']}", false, $context);
+
                 if ($contenido) {
                     $preg = "_\[" . $objeto['Id'] . "\]=(.*);";
                     preg_match_all("/$preg/Um", $contenido, $salida, PREG_PATTERN_ORDER);
                     if (isset($salida[1][0])) {
                         $jsonWeb = json_decode($salida[1][0],TRUE);
                         if(isset($jsonWeb['name_eses'])) {
-                            $nombre = utf8_encode($jsonWeb['name_eses']);
+                            $enc = mb_detect_encoding($jsonWeb['name_eses'], "UTF-8,ISO-8859-1");
+                            $nombre = iconv($enc, "UTF-8", $jsonWeb['name_eses']);
                         }
                         if(isset($jsonWeb['quality'])) {
                             $calidad = $jsonWeb['quality'];
@@ -95,8 +105,25 @@ class ServiceItem extends Service
                     } else {
                         preg_match_all("/<meta name=\"keywords\" content=\"(.*)\">/Um", $contenido, $salida3, PREG_PATTERN_ORDER);
                         if (isset($salida3[1][0])) {
-                            if (strpos($contenido, 'Clásico')) {
+                            if (strpos($salida3[1][0], 'Clásico')) {
                                 $expansion = 'Clásico';
+                            }
+                            else{
+                                preg_match_all("/World of Warcraft:(.*)\./Um", $contenido, $salida, PREG_PATTERN_ORDER);
+                                if (isset($salida[1][0])) {
+                                    $expansion = html_entity_decode($salida[1][0]);
+                                    unset($salida);
+                                } else {
+                                    preg_match_all("/<meta name=\"keywords\" content=\"(.*)\">/Um", $contenido, $salida2, PREG_PATTERN_ORDER);
+                                    if (isset($salida2[1][0])) {
+                                        if (strpos($contenido, 'The Burning Crusade')) {
+                                            $expansion = 'The Burning Crusade';
+                                        }
+                                    } else {
+                                        print_r($contenido);
+                                        return "Error on item's expansion.";
+                                    }
+                                }
                             }
                         }
                         else {
@@ -156,15 +183,15 @@ class ServiceItem extends Service
                             $classSubclassExists = ClassSubclass::Clase_Subclase($clase, $subclase)->get()->toArray();
                             if (!$classSubclassExists) {
                                 $newClassSubclass = new ClassSubclass;
-                                $newClassSubclass->clase_id = $clase;
-                                $newClassSubclass->clase_nombre = $claseNombre;
-                                $newClassSubclass->subclase_id = $subclase;
-                                $newClassSubclass->subclase_nombre = $subclaseNombre;
+                                $newClassSubclass->Clase_id = $clase;
+                                $newClassSubclass->Clase_nombre = $claseNombre;
+                                $newClassSubclass->Subclase_id = $subclase;
+                                $newClassSubclass->Subclase_nombre = $subclaseNombre;
                                 $saved = $newClassSubclass->save();
                                 if(!$saved){
                                     return 'Error on saving subClass.';
                                 }
-                                $classSubclassExists[0]['Id'] = $newClassSubclass->id;
+                                $classSubclassExists[0]['Id'] = $newClassSubclass->Id;
                             }
                             $arrayClaseSubclase[] = $clase . '_' . $subclase;
                             $arrayIdClaseSubclase[$clase . '_' . $subclase] = $classSubclassExists[0]['Id'];
@@ -173,14 +200,14 @@ class ServiceItem extends Service
 
                     if (isset($nombre) && isset($descripcion) && isset($calidad) && isset($icono) && isset($nivelRequerido) && isset($nivelObjeto) && isset($expansion)) {
                         $updateItem = Item::find($objeto['Id']);
-                        $updateItem->nombre = $nombre;
-                        $updateItem->descripcion = $descripcion;
-                        $updateItem->calidad = $calidad;
-                        $updateItem->icono = $icono;
-                        $updateItem->nivel_requerido = $nivelRequerido;
-                        $updateItem->nivel_objeto = $nivelObjeto;
-                        $updateItem->expansion = $expansion;
-                        $updateItem->class_subclass_id = $classSubclassExists[0]['Id'];
+                        $updateItem->Nombre = $nombre;
+                        $updateItem->Descripcion = $descripcion;
+                        $updateItem->Calidad = $calidad;
+                        $updateItem->Icono = $icono;
+                        $updateItem->Nivel_requerido = $nivelRequerido;
+                        $updateItem->Nivel_objeto = $nivelObjeto;
+                        $updateItem->Expansion = $expansion;
+                        $updateItem->Class_subclass_id = $classSubclassExists[0]['Id'];
                         $saved = $updateItem->save();
                         if(!$saved){
                             return 'Error on saving item.';

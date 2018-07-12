@@ -25,6 +25,7 @@ class ServiceSubasta extends Service
         $json_id = $datos['id'];
         $totalSubastas = count($subastas);
         $cadaIteracion = 0;
+        $todosLosItems = [];
 
         $todosRealms = Realm::all()->toArray();
         foreach($todosRealms as $reino){
@@ -52,94 +53,96 @@ class ServiceSubasta extends Service
                  * [Usamos un array para la lista de reinos del json actual]
                  */
 
-                if (!in_array($subasta['ownerRealm'], $arrayRealms)) {
-                    $realmExists = Realm::Nombre($subasta['ownerRealm'])->get()->toArray();
-                    if (!$realmExists) {
+                if (!array_key_exists($subasta['ownerRealm'], $arrayRealms)) {
+                    $retornoRealm = Realm::Nombre($subasta['ownerRealm'])->get()->toArray();
+                    if (!$retornoRealm) {
                         $newRealm = new Realm;
                         $newRealm->Nombre = $subasta['ownerRealm'];
                         $saved = $newRealm->save();
                         if(!$saved){
                             dd('Error al guardar Realm');
                         }
-                        $realmExists[$newRealm->Nombre] = $newRealm->Id;
+                        $realmExists[$subasta['ownerRealm']] = $newRealm->Id;
                     }
-                    $arrayRealms[$newRealm->Nombre] = $newRealm->Id;
+                    else{
+                        foreach ($retornoRealm as $key => $reino) {
+                            $realmExists[$reino['Nombre']] = $reino['Id'];
+                        }
+                    }
+                    $arrayRealms[$subasta['ownerRealm']] = $realmExists[$subasta['ownerRealm']];
                 }
-
-                /*if(isset($realmExists[$newRealm->Nombre])) {
-                    $subastas[$key]['reinoReal'] = $realmExists[$newRealm->Nombre];
-                }else{
-                    dd($realmExists);
-                }*/
 
                 $subastas[$key]['reinoReal'] = $arrayRealms[$subasta['ownerRealm']];
                 
                 /**
                  * [Comprobamos la facción a la que pertenece la subasta]
                  */
-                if(isset($arrayOwners[$subasta['owner']])){
-                    $retornoFaccion['faction'] = $arrayOwners[$subasta['owner']];
-                }
-                else {
-                    $retornoFaccion = $this->getFaction($subasta, $arrayRealms);
-                    $arrayOwners[$subasta['owner']] = $retornoFaccion['idOwner'];
-                    /*print_r($subasta['owner']);
-                    print_r($retornoFaccion['idOwner']);
-                    print_r($arrayOwners[$subasta['owner']]);*/
-                }
+                
+                //if(isset($arrayOwners[$subasta['owner']])){
+                //    $retornoFaccion['faction'] = $arrayOwners[$subasta['owner']];
+                //}
+                //else {
+                //    $retornoFaccion = $this->getFaction($subasta, $arrayRealms);
+                //    $arrayOwners[$subasta['owner']] = $retornoFaccion['idOwner'];
+                //}
 
                 /**
                  * [Si no encontramos facción para una subasta]
                  * [Quizás hemos llegado al limite de peticiones]
                  * [1:Horda;]
                  */
-                if (!$retornoFaccion) {
-                    //dd('No hay faccion disponible');
-                    $retornoFaccion['faction'] = 3;
-                }
-                $faccionSubasta = $retornoFaccion['faction'];
-                $subastas[$key]['faccionReal'] = $faccionSubasta;
+                
+                //if (!$retornoFaccion) {
+                //    //dd('No hay faccion disponible');
+                //    $retornoFaccion['faction'] = 3;
+                //}
+                //$faccionSubasta = $retornoFaccion['faction'];
+                //$subastas[$key]['faccionReal'] = $faccionSubasta;
 
                 /**
                  * [Inicializamos array de un objeto si no existe]
                  */
-                if (!isset($items[$faccionSubasta][$subasta['item']])) {
-                    $items[$faccionSubasta][$subasta['item']] = array();
-                    $items[$faccionSubasta][$subasta['item']]['maximo'] = 0;
-                    $items[$faccionSubasta][$subasta['item']]['calculo_pmp'] = 0;
-                    $items[$faccionSubasta][$subasta['item']]['total_items'] = 0;
+                
+                if (!isset($items[$arrayOwners[$subasta['owner']]][$subasta['item']])) {
+                    $items[$arrayOwners[$subasta['owner']]][$subasta['item']] = array();
+                    $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['maximo'] = 0;
+                    $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['calculo_pmp'] = 0;
+                    $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['total_items'] = 0;
                 }
 
                 /**
                  * [Si existe precio de compra, calculamos máximo]
                  */
                 
-                if ($items[$faccionSubasta][$subasta['item']]['maximo'] < (round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP))) {
-                    $items[$faccionSubasta][$subasta['item']]['maximo'] = round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP);
+                if ($items[$arrayOwners[$subasta['owner']]][$subasta['item']]['maximo'] < (round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP))) {
+                    $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['maximo'] = round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP);
                 }
                 /**
                  * [Si no existe minimo, asignamos el primero por objeto por defecto]
                  */
-                if (!isset($items[$faccionSubasta][$subasta['item']]['minimo'])) {
-                    $items[$faccionSubasta][$subasta['item']]['minimo'] = round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP);
+                if (!isset($items[$arrayOwners[$subasta['owner']]][$subasta['item']]['minimo'])) {
+                    $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['minimo'] = round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP);
                 }
                 /**
                  * [Calculamos minimo]
                  */
-                if ($items[$faccionSubasta][$subasta['item']]['minimo'] > (round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP))) {
-                    $items[$faccionSubasta][$subasta['item']]['minimo'] = round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP);
+                if ($items[$arrayOwners[$subasta['owner']]][$subasta['item']]['minimo'] > (round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP))) {
+                    $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['minimo'] = round($subasta['buyout'] / $subasta['quantity'], 0, PHP_ROUND_HALF_UP);
                 }
                 /**
                  * [Obtenemos valores para calcular el precio medio ponderado]
                  */
-                $items[$faccionSubasta][$subasta['item']]['calculo_pmp'] += $subasta['quantity'] * $subasta['buyout'];
-                $items[$faccionSubasta][$subasta['item']]['total_items'] += $subasta['quantity'];
+                $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['calculo_pmp'] += $subasta['quantity'] * $subasta['buyout'];
+                $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['total_items'] += $subasta['quantity'];
 
                 /**
                  * [Guardado del objeto si no existe]
                  * [Usamos un array para la lista de objetos del json actual]
                  */
-                $todosLosItems[] = $subasta['item'];
+                
+                if(!in_array($subasta['item'], $todosLosItems)){
+                    $todosLosItems[] = $subasta['item'];
+                }
                 /*if (!in_array($subasta['item'], $arrayItems)) {
                     $itemExists = Item::Id($subasta['item'])->get()->toArray();
                     if (!$itemExists) {
@@ -153,49 +156,65 @@ class ServiceSubasta extends Service
                     $arrayItems[] = $subasta['item'];
                 }*/
             } else {
-                
                 unset($subastas[$key]);
             }
-            echo '<pre>';
+           /* echo '<pre>';
             $cadaIteracion ++;
             print_r($items);
             echo $cadaIteracion.'/'.$totalSubastas.'<br>';
-            echo '</pre>';
+            echo '</pre>';*/
             //dd($items);
         endforeach;
 
-        echo 'Todos los objetos';
-        dd($items);
+        
+        $newTodosLosItemsBD = [];
         $todosLosItemsBD = Item::all()->toArray();
+
+        if(count($todosLosItemsBD)>0){
+            foreach ($todosLosItemsBD as $keyTItem => $tItem) {
+                $newTodosLosItemsBD[$tItem['Id']] = $tItem;
+            }
+        }
 
         foreach($todosLosItems as $keyItemsJson => $itemJson){
             set_time_limit(15);
-            if(!in_array($itemJson['Id'],$todosLosItemsBD)){
-                $itemFaltante[] = $itemJson['Id'];
+            if(!array_key_exists($itemJson,$newTodosLosItemsBD)){
+                $itemFaltante[] = [
+                        'Id' => $itemJson,
+                        'Nombre' => NULL,
+                        'Descripcion' => NULL,
+                        'Icono' => NULL,
+                        'Calidad' => NULL,
+                        'Nivel_objeto' => NULL,
+                        'Nivel_requerido' => NULL
+                    ];
             }
         }
 
-        foreach($itemFaltante as $itemAInsertar){
-            set_time_limit(15);
-            $newItem = new Item;
-            $newItem->Id = $itemAInsertar;
-            $saved = $newItem->save();
-            if(!$saved){
-                dd('Error al guardar Item');
+        if(isset($itemFaltante) && count($itemFaltante)>0){
+            foreach ($itemFaltante as $key => $iFaltante) {
+                try{
+                    \DB::table('item')->insert($iFaltante);
+                }
+                catch(Exception $e) {
+                    echo 'Captured exception: ',  $e->getMessage(), "\n";
+                }
             }
         }
+
         /**
          * [Calculamos el precio medio ponderado por objeto]
          */
-
-        foreach ($items as $keyFaccion => $itemElement) {
-            foreach ($itemElement as $keyItem => $item) {
-                $items[$keyFaccion][$keyItem]['pmp'] = $item['calculo_pmp'] / $item['total_items'];
+        dd($items);
+        foreach ($items as $duenno => $kObject) {
+            foreach ($kObject as $keyItem => $item) {
+                $items[$duenno][$keyItem]['pmp'] = $item['calculo_pmp'] / $item['total_items'];
             }
         }
         $arrayRetorno['items'] = $items;
         $arrayRetorno['subastas'] = $subastas;
         $arrayRetorno['reinos'] = $arrayRealms;
+
 
         return $arrayRetorno;
     }
@@ -211,11 +230,11 @@ class ServiceSubasta extends Service
                     $priceExists = Price::Item_fecha_faccion($keyPrecio, $fecha, $keyFaccion)->get()->toArray();
                     if (!$priceExists) {
                         $newPrice = new Price;
-                        $newPrice->precio_minimo = $precio['minimo'];
-                        $newPrice->precio_maximo = $precio['maximo'];
-                        $newPrice->precio_medio = $precio['pmp'];
-                        $newPrice->total_objetos = $precio['total_items'];
-                        $newPrice->faccion = $keyFaccion;
+                        $newPrice->Precio_minimo = $precio['minimo'];
+                        $newPrice->Precio_maximo = $precio['maximo'];
+                        $newPrice->Precio_medio = $precio['pmp'];
+                        $newPrice->Total_objetos = $precio['total_items'];
+                        $newPrice->Faccion = $keyFaccion;
                         $saved = $newPrice->save();
                         if(!$saved){
                             dd('Error al guardar Price');

@@ -10,37 +10,53 @@ use App\Models\ClassSubclass;
 use App\Models\Price;
 use Illuminate\Http\Request;
 
-class ServiceJson extends Service
+class ServiceOwner extends Service
 {
-	public function getJson($url) {
-        $contenido = json_decode(file_get_contents($url),TRUE);
-        $jsonExists = $this->existsJson($contenido['files'][0]['lastModified']);
-        /**
-         * [Guardamos json si no existe]
-         */
-        if (!$jsonExists) {
-        	$fecha = date('Y-m-d H:i:s', $contenido['files'][0]['lastModified']/1000);
-        	$jsonGuardado = $this->saveJson($contenido['files'][0]['url'],$contenido['files'][0]['lastModified'],$fecha);
-
-        	if($jsonGuardado){
-        		return $jsonGuardado;
-        	}
+	public function getOwners($subastas, $datos) {
+        $arrayOwners = array();
+        $subastaOwners = [];
+        $todosLosOwner = Owner::all()->toArray();
+        if(isset($todosLosOwner)){
+            foreach($todosLosOwner as $duenno){
+                $arrayOwners[$duenno['Nombre']] = $duenno['Faccion'];
+            }
         }
-        return FALSE;
+
+        $todosRealms = Realm::all()->toArray();
+        foreach($todosRealms as $reino){
+            $arrayRealms[$reino['Nombre']] = $reino['Id'];
+        }
+
+        foreach ($subastas as $key => $subasta) {
+            $owner['Nombre'] = $subasta['owner'];
+            $owner['ReinoNombre'] = $subasta['ownerRealm'];
+            if(!isset($arrayOwners[$owner['Nombre']])){
+                $subastaOwners[$owner['Nombre']] = $owner;
+                unset($owner);
+            }
+        }
+        if(isset($subastaOwners)){
+            foreach ($subastaOwners as $keyOwner => $ownerToInsert) {
+                set_time_limit(15);
+                $url = "https://eu.api.battle.net/wow/character/{$ownerToInsert['ReinoNombre']}/{$ownerToInsert['Nombre']}?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
+                $faccionExtraida = json_decode(@file_get_contents($url), TRUE);
+                $faccion = $faccionExtraida;
+                unset($faccionExtraida);
+
+                if (!isset($faccion['faction'])) {
+                    $faccion['faction'] = 3;
+                }
+                $ownerToInsert['Id'] = NULL;
+                $ownerToInsert['Faccion'] = $faccion['faction'];
+                $ownerToInsert['Realm_id'] = $arrayRealms[$ownerToInsert['ReinoNombre']];
+                unset($ownerToInsert['ReinoNombre']);
+               \DB::table('owner')->insert($ownerToInsert);
+            }
+        }
+        return count($subastaOwners);
     }
 
-    public function getLastJson() {
-        $jsonExists = Json::latest('Fecha')->get()->toArray();
-        /**
-         * [Guardamos json si no existe]
-         */
-        if ($jsonExists) {
-            return $jsonExists[0];
-        }
-        return FALSE;
-    }
-
-    public function existsJson($fecha) {
+    public function existsOwner($nombre) {
     	$jsonExists = Json::Fecha_numerica($fecha)->get()->toArray();
 
     	return $jsonExists;

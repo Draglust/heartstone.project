@@ -10,7 +10,8 @@ use App\Models\ClassSubclass;
 use App\Models\Price;
 use App\Http\Services\ServiceJson;
 use App\Http\Services\ServiceSubasta;
-use App\Http\Services\Serviceitem;
+use App\Http\Services\ServiceItem;
+use App\Http\Services\ServiceOwner;
 use Illuminate\Http\Request;
 
 class ApiController extends Controller {
@@ -18,12 +19,14 @@ class ApiController extends Controller {
     protected $ServiceJson;
     protected $ServiceSubasta;
     protected $ServiceItem;
+    protected $ServiceOwner;
 
-    public function __construct(ServiceJson $ServiceJson,ServiceSubasta $ServiceSubasta, Serviceitem $ServiceItem)
+    public function __construct(ServiceJson $ServiceJson,ServiceSubasta $ServiceSubasta, ServiceItem $ServiceItem, ServiceOwner $ServiceOwner)
     {
         $this->ServiceJson = $ServiceJson;
         $this->ServiceSubasta = $ServiceSubasta;
-        $this->Serviceitem = $ServiceItem;
+        $this->ServiceItem = $ServiceItem;
+        $this->ServiceOwner = $ServiceOwner;
     }
 
     public function index() {
@@ -36,6 +39,7 @@ class ApiController extends Controller {
             //$rawSubastas = $this->ServiceSubasta->getSubastas($retorno['url']);
 
             if (count($rawSubastas) > 0) {
+                $retornoOwners = $this->ServiceOwner->getOwners($rawSubastas, $retorno);
                 $retornoPrecios = $this->ServiceSubasta->getPrices($rawSubastas, $retorno);
                 dd($retornoPrecios);
                 $precios = $retornoPrecios['items'];
@@ -45,7 +49,7 @@ class ApiController extends Controller {
             else {
                 return 'No auction or Json already inserted.';
             }
-
+           
             if (isset($precios)) {
                 $preciosInsertados = $this->ServiceSubasta->putPrices($precios, $retorno['fecha']);
             }
@@ -56,7 +60,7 @@ class ApiController extends Controller {
             }
         }
         else{
-            return 'Json already inserted.';
+           return 'Json already inserted.';
         }
     }
 
@@ -64,5 +68,23 @@ class ApiController extends Controller {
         $retorno = $this->ServiceItem->treatItems();
 
         return $retorno;
+    }
+
+    public function owners(){
+        $retorno = $this->ServiceJson->getLastJson();
+        
+        if($retorno){
+            $rawSubastas = $this->ServiceJson->getAuctions($retorno['url']);
+            //Mismo método que getAuctions pero decodificando mediante json_decode
+            //$rawSubastas = $this->ServiceSubasta->getSubastas($retorno['url']);
+
+            if (count($rawSubastas) > 0) {
+                $retornoOwners = $this->ServiceOwner->getOwners($rawSubastas, $retorno);
+                dd($retornoOwners);
+            }
+            else{
+                return '0';
+            }
+        }
     }
 }
