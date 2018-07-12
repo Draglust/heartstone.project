@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 12-07-2018 a las 12:06:04
+-- Tiempo de generación: 12-07-2018 a las 12:25:41
 -- Versión del servidor: 5.7.21
 -- Versión de PHP: 5.6.35
 
@@ -72,15 +72,15 @@ CREATE TABLE IF NOT EXISTS `class_subclass` (
 DROP TABLE IF EXISTS `item`;
 CREATE TABLE IF NOT EXISTS `item` (
   `Id` bigint(20) NOT NULL,
-  `Nombre` varchar(70) NOT NULL,
-  `Descripcion` varchar(200) NOT NULL,
-  `Icono` varchar(45) NOT NULL,
-  `Calidad` int(1) NOT NULL,
-  `Nivel_objeto` int(4) NOT NULL,
-  `Nivel_requerido` int(4) NOT NULL,
-  `Expansion` varchar(100) NOT NULL,
-  `Class_Subclass_Id` bigint(20) NOT NULL,
-  `Tipo_inventario` varchar(45) NOT NULL,
+  `Nombre` varchar(70) DEFAULT NULL,
+  `Descripcion` varchar(200) DEFAULT NULL,
+  `Icono` varchar(45) DEFAULT NULL,
+  `Calidad` int(1) DEFAULT NULL,
+  `Nivel_objeto` int(4) DEFAULT NULL,
+  `Nivel_requerido` int(4) DEFAULT NULL,
+  `Expansion` varchar(100) DEFAULT NULL,
+  `Class_Subclass_Id` bigint(20) DEFAULT NULL,
+  `Tipo_inventario` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`Id`),
   KEY `FK_CS_Item` (`Class_Subclass_Id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8;
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `json` (
   `Fecha` datetime NOT NULL,
   `Fecha_numerica` bigint(20) NOT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `owner` (
   `Realm_id` bigint(20) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_REALM_OWNER` (`Realm_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=1192 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=1834 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
