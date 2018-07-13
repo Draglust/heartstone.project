@@ -50,4 +50,8 @@ class Price extends Eloquent
 		'Fecha',
 		'Total_objetos'
 	];
+
+	public function scopeFecha($query, $fecha) {
+        return $query->where('Fecha', '=', $fecha);
+    }
 }

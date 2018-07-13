@@ -30,37 +30,47 @@ class ApiController extends Controller {
     }
 
     public function index() {
-        $url = "https://eu.api.battle.net/wow/auction/data/shen'dralar?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
-        $retorno = $this->ServiceJson->getJson($url);
-        
-        if($retorno){
-            $rawSubastas = $this->ServiceJson->getAuctions($retorno['url']);
-            //Mismo método que getAuctions pero decodificando mediante json_decode
-            //$rawSubastas = $this->ServiceSubasta->getSubastas($retorno['url']);
 
-            if (count($rawSubastas) > 0) {
-                $retornoOwners = $this->ServiceOwner->getOwners($rawSubastas, $retorno);
-                $retornoPrecios = $this->ServiceSubasta->getPrices($rawSubastas, $retorno);
-                dd($retornoPrecios);
-                $precios = $retornoPrecios['items'];
-                $treatedSubastas = $retornoPrecios['subastas'];
-                $reinos = $retornoPrecios['reinos'];
+        try{
+            ini_set('memory_limit', '750M');
+            $url = "https://eu.api.battle.net/wow/auction/data/shen'dralar?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
+            $retorno = $this->ServiceJson->getJson($url);
+            $retornoItems = $this->ServiceItem->getAllItems();
+            $retornoPrices = $this->ServiceItem->getDateFactionItemPrices($retorno['fecha']);
+
+            if($retorno){
+                $rawSubastas = $this->ServiceJson->getAuctions($retorno['url']);
+                //Mismo método que getAuctions pero decodificando mediante json_decode
+                //$rawSubastas = $this->ServiceSubasta->getSubastas($retorno['url']);
+
+                if (count($rawSubastas) > 0) {
+                    $retornoOwners = $this->ServiceOwner->getOwners($rawSubastas, $retorno);
+                    $retornoPrecios = $this->ServiceSubasta->getPrices($rawSubastas, $retorno, $retornoItems);
+                    $precios = $retornoPrecios['items'];
+                    $treatedSubastas = $retornoPrecios['subastas'];
+                    $reinos = $retornoPrecios['reinos'];
+                }
+                else {
+                    return 'No auctions or Json already inserted.';
+                }
+               
+                if (isset($precios)) {
+                    $preciosInsertados = $this->ServiceSubasta->putPrices($precios, $retorno['fecha'],$retornoPrices);
+                    dd($preciosInsertados);
+                }
+                if ($preciosInsertados) {
+                    $subastasReales = $this->ServiceSubasta->putSubastas($precios, $treatedSubastas);
+                } else {
+                    return 'No prices inserted.';
+                }
             }
-            else {
-                return 'No auction or Json already inserted.';
-            }
-           
-            if (isset($precios)) {
-                $preciosInsertados = $this->ServiceSubasta->putPrices($precios, $retorno['fecha']);
-            }
-            if ($preciosInsertados) {
-                $subastasReales = $this->ServiceSubasta->putSubastas($precios, $treatedSubastas);
-            } else {
-                return 'No prices inserted.';
+            else{
+                var_dump($retorno);
+               return 'Json already inserted.';
             }
         }
-        else{
-           return 'Json already inserted.';
+        catch(\Exception $e){
+            echo $e->getMessage();
         }
     }
 

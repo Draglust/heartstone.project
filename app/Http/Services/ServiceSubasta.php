@@ -19,13 +19,17 @@ class ServiceSubasta extends Service
         return $contenido['auctions'];
     }
 
-    public function getPrices($subastas, $datos) {
+    public function getPrices($subastas, $datos, $allItems) {
         $arrayItems = array();
         $arrayRealms = array();
         $json_id = $datos['id'];
         $totalSubastas = count($subastas);
         $cadaIteracion = 0;
         $todosLosItems = [];
+
+        $todosLosItemsBD = $allItems;
+
+
 
         $todosRealms = Realm::all()->toArray();
         foreach($todosRealms as $reino){
@@ -39,6 +43,11 @@ class ServiceSubasta extends Service
         }
 
         foreach ($subastas as $key => $subasta):
+            if($subasta['item'] == 113263){
+                echo '<pre>';
+                var_dump($subasta);
+                echo '</pre>';
+            }
             /**
              * [De momento no usaremos las subastas sin precio de compra]
              */
@@ -54,21 +63,13 @@ class ServiceSubasta extends Service
                  */
 
                 if (!array_key_exists($subasta['ownerRealm'], $arrayRealms)) {
-                    $retornoRealm = Realm::Nombre($subasta['ownerRealm'])->get()->toArray();
-                    if (!$retornoRealm) {
-                        $newRealm = new Realm;
-                        $newRealm->Nombre = $subasta['ownerRealm'];
-                        $saved = $newRealm->save();
-                        if(!$saved){
-                            dd('Error al guardar Realm');
-                        }
-                        $realmExists[$subasta['ownerRealm']] = $newRealm->Id;
+                    $newRealm = new Realm;
+                    $newRealm->Nombre = $subasta['ownerRealm'];
+                    $saved = $newRealm->save();
+                    if(!$saved){
+                        dd('Error al guardar Realm');
                     }
-                    else{
-                        foreach ($retornoRealm as $key => $reino) {
-                            $realmExists[$reino['Nombre']] = $reino['Id'];
-                        }
-                    }
+                    $realmExists[$subasta['ownerRealm']] = $newRealm->Id;
                     $arrayRealms[$subasta['ownerRealm']] = $realmExists[$subasta['ownerRealm']];
                 }
 
@@ -108,6 +109,7 @@ class ServiceSubasta extends Service
                     $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['maximo'] = 0;
                     $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['calculo_pmp'] = 0;
                     $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['total_items'] = 0;
+                    $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['different_bout'] = 0;
                 }
 
                 /**
@@ -132,8 +134,9 @@ class ServiceSubasta extends Service
                 /**
                  * [Obtenemos valores para calcular el precio medio ponderado]
                  */
-                $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['calculo_pmp'] += $subasta['quantity'] * $subasta['buyout'];
+                $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['calculo_pmp'] += ($subasta['quantity'] * $subasta['buyout']);
                 $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['total_items'] += $subasta['quantity'];
+                $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['different_bout']++;
 
                 /**
                  * [Guardado del objeto si no existe]
@@ -155,6 +158,7 @@ class ServiceSubasta extends Service
                     }
                     $arrayItems[] = $subasta['item'];
                 }*/
+
             } else {
                 unset($subastas[$key]);
             }
@@ -166,15 +170,16 @@ class ServiceSubasta extends Service
             //dd($items);
         endforeach;
 
-        
         $newTodosLosItemsBD = [];
-        $todosLosItemsBD = Item::all()->toArray();
+
+        
 
         if(count($todosLosItemsBD)>0){
             foreach ($todosLosItemsBD as $keyTItem => $tItem) {
                 $newTodosLosItemsBD[$tItem['Id']] = $tItem;
             }
         }
+        
 
         foreach($todosLosItems as $keyItemsJson => $itemJson){
             set_time_limit(15);
@@ -205,42 +210,49 @@ class ServiceSubasta extends Service
         /**
          * [Calculamos el precio medio ponderado por objeto]
          */
-        dd($items);
+        
         foreach ($items as $duenno => $kObject) {
             foreach ($kObject as $keyItem => $item) {
-                $items[$duenno][$keyItem]['pmp'] = $item['calculo_pmp'] / $item['total_items'];
+                $items[$duenno][$keyItem]['pmp'] = round($item['calculo_pmp'] / $item['total_items'], 0, PHP_ROUND_HALF_UP);
+                //Parada para comprobar si el precio máximo es inferior al precio medio(INCONCEBIBLE)
+                if($items[$duenno][$keyItem]['maximo']<$items[$duenno][$keyItem]['pmp']){
+                    echo $keyItem;
+                    dd($items[$duenno][$keyItem]);
+                }
             }
         }
         $arrayRetorno['items'] = $items;
         $arrayRetorno['subastas'] = $subastas;
         $arrayRetorno['reinos'] = $arrayRealms;
 
-
         return $arrayRetorno;
     }
 
-    public function putPrices($precios, $fecha) {
+    public function putPrices($precios, $fecha, $insertedDatePrices) {
         $arrayPrecios = array();
+        $arrayPrecios = $insertedDatePrices;
+
         foreach ($precios as $keyFaccion => $elementPrecio) {
-            foreach ($elementPrecio as $keyPrecio => $precio) {
+            foreach ($elementPrecio as $elemento => $precio) {
+                set_time_limit(15);
                 /**
                  * [Si el precio no ha sido insertado en esta tanda, comprobamos en BD]
                  */
-                if (!in_array($keyFaccion . '-' . $keyPrecio, $arrayPrecios)) {
-                    $priceExists = Price::Item_fecha_faccion($keyPrecio, $fecha, $keyFaccion)->get()->toArray();
-                    if (!$priceExists) {
-                        $newPrice = new Price;
-                        $newPrice->Precio_minimo = $precio['minimo'];
-                        $newPrice->Precio_maximo = $precio['maximo'];
-                        $newPrice->Precio_medio = $precio['pmp'];
-                        $newPrice->Total_objetos = $precio['total_items'];
-                        $newPrice->Faccion = $keyFaccion;
-                        $saved = $newPrice->save();
-                        if(!$saved){
-                            dd('Error al guardar Price');
-                        }
+
+                if (!array_key_exists($elemento . '-' . $keyFaccion. '-' . $fecha, $arrayPrecios)) {
+                    $newPrice = new Price;
+                    $newPrice->Precio_minimo = $precio['minimo'];
+                    $newPrice->Precio_maximo = $precio['maximo'];
+                    $newPrice->Precio_medio = $precio['pmp'];
+                    $newPrice->Item_id = $elemento;
+                    $newPrice->Fecha = $fecha;
+                    $newPrice->Total_objetos = $precio['total_items'];
+                    $newPrice->Faccion = $keyFaccion;
+                    $saved = $newPrice->save();
+                    if(!$saved){
+                        dd('Error on saving price');
                     }
-                    $arrayPrecios[] = $keyFaccion . '-' . $keyPrecio;
+                    $arrayPrecios[$elemento . '-' . $keyFaccion. '-' . $fecha] = $elemento . '-' . $keyFaccion. '-' . $fecha;
                 }
             }
         }

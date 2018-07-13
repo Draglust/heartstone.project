@@ -60,7 +60,8 @@ class Item extends Eloquent
         return $query->where('Id','=',$id);
     }
 
-    public function scopeItem_Fecha_Faccion($query, $item, $fecha, $faccion) {
+    public function scopeItemFechaFaccion($query, $item, $fecha, $faccion) {
         return $query->where('Item_id', '=', $item)->where('Fecha', '=', $fecha)->where('Faccion', '=', $faccion);
     }
+    
 }

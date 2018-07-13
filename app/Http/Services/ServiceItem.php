@@ -226,4 +226,18 @@ class ServiceItem extends Service
         return 'All items completed.';
     }
 
+    public function getAllItems(){
+        $todosLosItemsBD = Item::whereNotNull('Id')->get(['Id'])->toArray();
+
+        return $todosLosItemsBD;
+    }
+
+    public function getDateFactionItemPrices($fecha){
+        $dateFactionItemPrices = Price::Fecha($fecha)->get(['Item_id','Faccion','Fecha'])->toArray();
+        foreach ($dateFactionItemPrices as $key => $value) {
+            $retornoDateFactionItemPrices[$value['Item_id'].'-'.$value['Faccion'].'-'.$value['Fecha']] = $value['Item_id'].'-'.$value['Faccion'].'-'.$value['Fecha'];
+        }
+
+        return $dateFactionItemPrices;
+    }
 }
