@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 13-07-2018 a las 11:48:06
+-- Tiempo de generación: 16-07-2018 a las 15:03:21
 -- Versión del servidor: 5.7.21
 -- Versión de PHP: 5.6.35
 
@@ -44,7 +44,7 @@ CREATE TABLE IF NOT EXISTS `auction` (
   KEY `FK_OWNER_AUCTION` (`Owner_id`),
   KEY `FK_REALM_AUCTION` (`Realm_id`),
   KEY `FK_ITEM_AUCTION` (`Item_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=7107 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `json` (
   `Fecha` datetime NOT NULL,
   `Fecha_numerica` bigint(20) NOT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=MyISAM AUTO_INCREMENT=63 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=82 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `owner` (
   `Realm_id` bigint(20) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_REALM_OWNER` (`Realm_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2242 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=2864 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS `price` (
   PRIMARY KEY (`Id`),
   UNIQUE KEY `UNIQUE_Item_Fecha` (`Fecha`,`Item_id`,`Faccion`),
   KEY `FK_ITEM_PRICE` (`Item_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=5094 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=142630 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
