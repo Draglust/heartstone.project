@@ -15,6 +15,7 @@ class ServiceOwner extends Service
 	public function getOwners($subastas, $datos) {
         $arrayOwners = array();
         $subastaOwners = [];
+        $retorno['realms'] = [];
         $todosLosOwner = Owner::all()->toArray();
         if(isset($todosLosOwner)){
             foreach($todosLosOwner as $duenno){
@@ -30,6 +31,9 @@ class ServiceOwner extends Service
         foreach ($subastas as $key => $subasta) {
             $owner['Nombre'] = $subasta['owner'];
             $owner['ReinoNombre'] = $subasta['ownerRealm'];
+            if(!in_array($arrayRealms[$owner['ReinoNombre']], $retorno['realms'])){
+                $retorno['realms'][] = $arrayRealms[$owner['ReinoNombre']];
+            }
             if(!isset($arrayOwners[$owner['Nombre']])){
                 $subastaOwners[$owner['Nombre']] = $owner;
                 unset($owner);
@@ -53,7 +57,8 @@ class ServiceOwner extends Service
                \DB::table('owner')->insert($ownerToInsert);
             }
         }
-        return count($subastaOwners);
+        $retorno['num_owners'] = count($subastaOwners);
+        return $retorno;
     }
 
     public function existsOwner($nombre) {

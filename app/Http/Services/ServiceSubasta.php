@@ -6,6 +6,7 @@ use App\Models\Json;
 use App\Models\Realm;
 use App\Models\Item;
 use App\Models\Owner;
+use App\Models\Auction;
 use App\Models\ClassSubclass;
 use App\Models\Price;
 use Illuminate\Http\Request;
@@ -43,15 +44,10 @@ class ServiceSubasta extends Service
         }
 
         foreach ($subastas as $key => $subasta):
-            if($subasta['item'] == 113263){
-                echo '<pre>';
-                var_dump($subasta);
-                echo '</pre>';
-            }
             /**
              * [De momento no usaremos las subastas sin precio de compra]
              */
-            if (isset($subasta['buyout'])) {
+            if (isset($subasta['buyout'] && $subasta['buyout']>0)) {
                 $subastas[$key]['idJson'] = $json_id;
                 /**
                  * [Inicializamos el tiempo limite de ejecucion en cada subasta para que no expire]
@@ -134,7 +130,7 @@ class ServiceSubasta extends Service
                 /**
                  * [Obtenemos valores para calcular el precio medio ponderado]
                  */
-                $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['calculo_pmp'] += ($subasta['quantity'] * $subasta['buyout']);
+                $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['calculo_pmp'] += ($subasta['quantity'] * round($subasta['buyout'] / $subasta['quantity']));
                 $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['total_items'] += $subasta['quantity'];
                 $items[$arrayOwners[$subasta['owner']]][$subasta['item']]['different_bout']++;
 
@@ -215,10 +211,6 @@ class ServiceSubasta extends Service
             foreach ($kObject as $keyItem => $item) {
                 $items[$duenno][$keyItem]['pmp'] = round($item['calculo_pmp'] / $item['total_items'], 0, PHP_ROUND_HALF_UP);
                 //Parada para comprobar si el precio máximo es inferior al precio medio(INCONCEBIBLE)
-                if($items[$duenno][$keyItem]['maximo']<$items[$duenno][$keyItem]['pmp']){
-                    echo $keyItem;
-                    dd($items[$duenno][$keyItem]);
-                }
             }
         }
         $arrayRetorno['items'] = $items;
@@ -262,41 +254,40 @@ class ServiceSubasta extends Service
     public function putSubastas($precios, $subastas) {
         $arrayOwners = array();
         $arrayIdOwners = array();
+        $alreadyInserted = [];
+        $todosLosOwner = Owner::all()->toArray();
+        if(isset($todosLosOwner)){
+            foreach($todosLosOwner as $duenno){
+                $arrayOwners[$duenno['Nombre']] = $duenno['Faccion'];
+                $arrayIdOwners[$duenno['Nombre']] = $duenno['id'];
+            }
+        }
         foreach ($subastas as $keySubasta => $subasta) {
             foreach ($precios as $keyFaccion => $itemPrecio) {
                 foreach ($itemPrecio as $keyPrecio => $precio) {
-                    if ($subasta['faccionReal'] == $keyFaccion) {
-                        if ($subasta['buyout'] < ($precio['pmp'] * (0.80))) {
-                            if (!in_array($subasta['owner'], $arrayOwners)) {
-                                $ownerExists = Owner::Nombre($subasta['owner'])->get()->toArray();
-                                if (!$ownerExists) {
-                                    $newOwner = new Owner;
-                                    $newOwner->nombre = $subasta['owner'];
-                                    $newOwner->realm_id = $subasta['reinoReal'];
-                                    $newOwner->faccion = $subasta['faccionReal'];
-                                    $saved = $newOwner->save();
-                                    if(!$saved){
-                                        dd('Error al guardar Owner');
-                                    }
-                                    $ownerExists[0]['Id'] = $newOwner->id;
+                    set_time_limit(15);
+                    if (isset($arrayOwners[$subasta['owner']]) && $arrayOwners[$subasta['owner']] == $keyFaccion && $subasta['item'] == $keyPrecio) {
+                        if ($subasta['buyout'] < ($precio['pmp'] * 0.50)) {
+                            if(!array_key_exists($subasta['auc'], $alreadyInserted)){
+                                $newAuction = new Auction;
+                                $newAuction->apuesta = $subasta['bid'];
+                                $newAuction->compra = $subasta['buyout'];
+                                $newAuction->cantidad = $subasta['quantity'];
+                                $newAuction->tiempo_restante = $subasta['timeLeft'];
+                                $newAuction->item_id = $subasta['item'];
+                                $newAuction->realm_id = $subasta['reinoReal'];
+                                $newAuction->json_id = $subasta['idJson'];
+                                $newAuction->id = $subasta['auc'];
+                                $newAuction->owner_id = $arrayIdOwners[$subasta['owner']];
+                                $saved = $newAuction->save();
+                                $alreadyInserted[$subasta['auc']] = $subasta['auc'];
+                                if(!$saved){
+                                    dd('Error al guardar Auction');
                                 }
-                                $arrayOwners[] = $subasta['owner'];
-                                $arrayIdOwners[$subasta['owner']] = $ownerExists[0]['Id'];
                             }
-
-                            $newAuction = new Auction;
-                            $newAuction->apuesta = $subasta['bid'];
-                            $newAuction->compra = $subasta['buyout'];
-                            $newAuction->cantidad = $subasta['quantity'];
-                            $newAuction->tiempo_restante = $subasta['timeLeft'];
-                            $newAuction->item_id = $subasta['item'];
-                            $newAuction->realm_id = $subasta['reinoReal'];
-                            $newAuction->json_id = $subasta['idJson'];
-                            $newAuction->owner_id = $arrayIdOwners[$subasta['owner']];
-                            $saved = $newAuction->save();
-                            if(!$saved){
-                                dd('Error al guardar Auction');
-                            }
+                        }
+                        else{
+                            unset($subastas[$keySubasta]);
                         }
                     }
                 }
@@ -344,6 +335,14 @@ class ServiceSubasta extends Service
 
         return $faccion;
 
+    }
+
+    public function delAuctions($reinos_id) {
+        foreach($reinos_id as $reino){
+            $deletedRows = Auction::where('Realm_id', $reino)->delete();
+        }
+
+        return TRUE;
     }
 
 }

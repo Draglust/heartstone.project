@@ -45,6 +45,7 @@ class ApiController extends Controller {
 
                 if (count($rawSubastas) > 0) {
                     $retornoOwners = $this->ServiceOwner->getOwners($rawSubastas, $retorno);
+                    $retornoSubastas = $this->ServiceSubasta->delAuctions($retornoOwners['realms']);
                     $retornoPrecios = $this->ServiceSubasta->getPrices($rawSubastas, $retorno, $retornoItems);
                     $precios = $retornoPrecios['items'];
                     $treatedSubastas = $retornoPrecios['subastas'];
@@ -56,10 +57,11 @@ class ApiController extends Controller {
                
                 if (isset($precios)) {
                     $preciosInsertados = $this->ServiceSubasta->putPrices($precios, $retorno['fecha'],$retornoPrices);
-                    dd($preciosInsertados);
+
                 }
                 if ($preciosInsertados) {
                     $subastasReales = $this->ServiceSubasta->putSubastas($precios, $treatedSubastas);
+                    dd($subastasReales);
                 } else {
                     return 'No prices inserted.';
                 }

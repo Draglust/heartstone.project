@@ -57,7 +57,7 @@ class ServiceJson extends Service
         }
         $retorno['id'] = $newJson->Id;
         $retorno['url'] = $url;
-        $retorno['fecha'] = round($fecha_numerica);
+        $retorno['fecha'] = $fecha;
 
         return $retorno;
     }
