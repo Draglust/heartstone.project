@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 16-07-2018 a las 15:03:21
+-- Tiempo de generación: 17-07-2018 a las 14:32:23
 -- Versión del servidor: 5.7.21
 -- Versión de PHP: 5.6.35
 
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `class_subclass` (
   `Subclase_id` int(11) NOT NULL,
   PRIMARY KEY (`Id`),
   UNIQUE KEY `Uni_class_subclass` (`Clase_id`,`Subclase_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=84 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=188 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -72,8 +72,8 @@ CREATE TABLE IF NOT EXISTS `class_subclass` (
 DROP TABLE IF EXISTS `item`;
 CREATE TABLE IF NOT EXISTS `item` (
   `Id` bigint(20) NOT NULL,
-  `Nombre` varchar(70) DEFAULT NULL,
-  `Descripcion` varchar(200) DEFAULT NULL,
+  `Nombre` varchar(200) DEFAULT NULL,
+  `Descripcion` varchar(300) DEFAULT NULL,
   `Icono` varchar(70) DEFAULT NULL,
   `Calidad` int(1) DEFAULT NULL,
   `Nivel_objeto` int(4) DEFAULT NULL,
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `json` (
   `Fecha` datetime NOT NULL,
   `Fecha_numerica` bigint(20) NOT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=MyISAM AUTO_INCREMENT=82 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=84 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `owner` (
   `Realm_id` bigint(20) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_REALM_OWNER` (`Realm_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=2864 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3079 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS `price` (
   PRIMARY KEY (`Id`),
   UNIQUE KEY `UNIQUE_Item_Fecha` (`Fecha`,`Item_id`,`Faccion`),
   KEY `FK_ITEM_PRICE` (`Item_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=142630 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=152730 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
