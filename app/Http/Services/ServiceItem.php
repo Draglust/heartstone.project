@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 class ServiceItem extends Service
 {
 	public function treatItems() {
-        $objetosEncontrados = Item::NombreIsNull()->get()->toArray();
+        $objetosEncontrados = Item::NombreIsNull()->orderBy('Id')->get()->toArray();
         $arrayClaseSubclase = array();
 
         $prevClassSubclass = ClassSubclass::all()->toArray();
