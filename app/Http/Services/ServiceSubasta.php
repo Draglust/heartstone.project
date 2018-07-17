@@ -47,7 +47,7 @@ class ServiceSubasta extends Service
             /**
              * [De momento no usaremos las subastas sin precio de compra]
              */
-            if (isset($subasta['buyout'] && $subasta['buyout']>0)) {
+            if (isset($subasta['buyout']) && $subasta['buyout']>0) {
                 $subastas[$key]['idJson'] = $json_id;
                 /**
                  * [Inicializamos el tiempo limite de ejecucion en cada subasta para que no expire]
@@ -267,7 +267,7 @@ class ServiceSubasta extends Service
                 foreach ($itemPrecio as $keyPrecio => $precio) {
                     set_time_limit(15);
                     if (isset($arrayOwners[$subasta['owner']]) && $arrayOwners[$subasta['owner']] == $keyFaccion && $subasta['item'] == $keyPrecio) {
-                        if ($subasta['buyout'] < ($precio['pmp'] * 0.50)) {
+                        if ($subasta['buyout'] < ($precio['pmp'] * 0.40)) {
                             if(!array_key_exists($subasta['auc'], $alreadyInserted)){
                                 $newAuction = new Auction;
                                 $newAuction->apuesta = $subasta['bid'];

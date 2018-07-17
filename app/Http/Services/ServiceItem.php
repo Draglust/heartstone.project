@@ -15,8 +15,11 @@ class ServiceItem extends Service
 	public function treatItems() {
         $objetosEncontrados = Item::NombreIsNull()->get()->toArray();
         $arrayClaseSubclase = array();
-        $arrayIdClaseSubclase = array();
 
+        $prevClassSubclass = ClassSubclass::all()->toArray();
+        foreach ($prevClassSubclass as $key => $csValue) {
+            $arrayClaseSubclase[$csValue['Clase_id'].'_'.$csValue['Subclase_id']] = $csValue['Id'];
+        }
         /**
          * [Json que contiene todas las clases y subclases del juego]
          */
@@ -26,23 +29,33 @@ class ServiceItem extends Service
                     foreach ($objetosEncontrados as $keyObjeto => $objeto) {
                         set_time_limit(15);
                         $context = stream_context_create(
-            array(
-                'http' => array(
-                    'max_redirects' => 101
-                    //'follow_location' => false
-                )
-            )
-        );
-        $contenido = file_get_contents("http://es.wowhead.com/item={$objeto['Id']}", false, $context);
+                        array(
+                            'http' => array(
+                                'max_redirects' => 101
+                                //'follow_location' => false
+                            )
+                        )
+                    );
+            $contenido = file_get_contents("http://es.wowhead.com/item={$objeto['Id']}", false, $context);
 
                 if ($contenido) {
                     $preg = "_\[" . $objeto['Id'] . "\]=(.*);";
                     preg_match_all("/$preg/Um", $contenido, $salida, PREG_PATTERN_ORDER);
                     if (isset($salida[1][0])) {
-                        $jsonWeb = json_decode($salida[1][0],TRUE);
+                        foreach ($salida[1] as $key => $jsonValores) {
+                            $jsonWeb = json_decode($salida[1][$key],TRUE);
+                            if(isset($jsonWeb['name_eses'])) {
+                               break;
+                            }
+                        }
                         if(isset($jsonWeb['name_eses'])) {
                             $enc = mb_detect_encoding($jsonWeb['name_eses'], "UTF-8,ISO-8859-1");
                             $nombre = iconv($enc, "UTF-8", $jsonWeb['name_eses']);
+                        }
+                        else{
+                            var_dump($jsonWeb);
+                            dd($objeto['Id']);
+                            return 'Error on extracting name.';
                         }
                         if(isset($jsonWeb['quality'])) {
                             $calidad = $jsonWeb['quality'];
@@ -51,7 +64,10 @@ class ServiceItem extends Service
                             $icono = $jsonWeb['icon'];
                         }
                         if(isset($jsonWeb['reqlevel'])) {
-                            $icono = $jsonWeb['reqlevel'];
+                            $nivelRequerido = $jsonWeb['reqlevel'];
+                        }
+                        elseif(isset($jsonWeb['jsonequip']['reqlevel'])){
+                            $nivelRequerido = $jsonWeb['jsonequip']['reqlevel'];
                         }
                         else {
                             $nivelRequerido = 0;
@@ -119,6 +135,21 @@ class ServiceItem extends Service
                                         if (strpos($contenido, 'The Burning Crusade')) {
                                             $expansion = 'The Burning Crusade';
                                         }
+                                        if (strpos($contenido, 'Mists of Pandaria')) {
+                                            $expansion = 'Mists of Pandaria';
+                                        }
+                                        if (strpos($contenido, 'Cataclysm')) {
+                                            $expansion = 'Cataclysm';
+                                        }
+                                        if (strpos($contenido, 'Legion')) {
+                                            $expansion = 'Legion';
+                                        }
+                                        if (strpos($contenido, 'Warlords of Draenor')) {
+                                            $expansion = 'Warlords of Draenor';
+                                        }
+                                        if (strpos($contenido, 'Wrath of the Lich King')) {
+                                            $expansion = 'Wrath of the Lich King';
+                                        }
                                     } else {
                                         print_r($contenido);
                                         return "Error on item's expansion.";
@@ -144,14 +175,21 @@ class ServiceItem extends Service
                             }
                         }
                     }
-
-                    preg_match_all("/PageTemplate.set\({ breadcrumb: \[(.*)\]}\);/Um", $contenido, $salida, PREG_PATTERN_ORDER);
+                    if(!isset($expansion)){
+                        dd($objeto['Id']);
+                    }
+                    $preg = "\\$\.extend\(g_items\[".$objeto['Id']."\], (.*)\);";
+                    preg_match_all("/$preg/Um", $contenido, $salida, PREG_PATTERN_ORDER);
+                    //preg_match_all("/PageTemplate.set\({ breadcrumb: \[(.*)\]}\);/Um", $contenido, $salida, PREG_PATTERN_ORDER);
                     if (isset($salida[1][0])) {
-                        $rawTipo = explode(',', $salida[1][0]);
-                        $clase = $rawTipo[2];
-                        $subclase = $rawTipo[3];
+                        $rawTipo = json_decode($salida[1][0],TRUE);
+                        //dd($rawTipo);
+                        //$rawTipo = explode(',', $salida[1][0]);
+                        $clase = trim($rawTipo['classs']);
+                        $subclase = trim($rawTipo['subclass']);
+                        $claseNombre = '';
                         $subclaseNombre = '';
-                        unset($salida);
+                        //unset($salida);
                         foreach ($jsonClasses['classes'] as $keyClass => $valueClass) {
                             if ($valueClass['class'] == $clase) {
                                 $claseNombre = $valueClass['name'];
@@ -175,13 +213,14 @@ class ServiceItem extends Service
                             }
                         }
                     } else {
+                        echo $preg;
                         return "Error on item's class and sublclass.";
                     }
 
-                    if (!in_array($clase . '_' . $subclase, $arrayClaseSubclase)) {
-                        if (isset($clase) && isset($subclase)) {
-                            $classSubclassExists = ClassSubclass::Clase_Subclase($clase, $subclase)->get()->toArray();
-                            if (!$classSubclassExists) {
+                    if (!array_key_exists($clase . '_' . $subclase, $arrayClaseSubclase)) {
+                        if (isset($clase) && isset($subclase) && is_numeric($clase) && is_numeric($subclase)) {
+                            //$classSubclassExists = ClassSubclass::Clase_Subclase($clase, $subclase)->get()->toArray();
+                            //if (!$classSubclassExists) {
                                 $newClassSubclass = new ClassSubclass;
                                 $newClassSubclass->Clase_id = $clase;
                                 $newClassSubclass->Clase_nombre = $claseNombre;
@@ -191,14 +230,16 @@ class ServiceItem extends Service
                                 if(!$saved){
                                     return 'Error on saving subClass.';
                                 }
-                                $classSubclassExists[0]['Id'] = $newClassSubclass->Id;
-                            }
-                            $arrayClaseSubclase[] = $clase . '_' . $subclase;
-                            $arrayIdClaseSubclase[$clase . '_' . $subclase] = $classSubclassExists[0]['Id'];
+                            //}
+                            $returningId = ClassSubclass::Clase_Subclase($clase, $subclase)->get()->toArray();
+                            $arrayClaseSubclase[$clase . '_' . $subclase] = $returningId[0]['Id'];
+                        }
+                        else{
+                            return 'No class or subclass.';
                         }
                     }
-
-                    if (isset($nombre) && isset($descripcion) && isset($calidad) && isset($icono) && isset($nivelRequerido) && isset($nivelObjeto) && isset($expansion)) {
+                    $classSubclassId = $arrayClaseSubclase[$clase . '_' . $subclase];
+                    if (isset($nombre) && isset($descripcion) && isset($calidad) && isset($icono) && isset($nivelRequerido) && isset($nivelObjeto) && isset($expansion) && $classSubclassId != '' && $classSubclassId != NULL) {
                         $updateItem = Item::find($objeto['Id']);
                         $updateItem->Nombre = $nombre;
                         $updateItem->Descripcion = $descripcion;
@@ -207,7 +248,7 @@ class ServiceItem extends Service
                         $updateItem->Nivel_requerido = $nivelRequerido;
                         $updateItem->Nivel_objeto = $nivelObjeto;
                         $updateItem->Expansion = $expansion;
-                        $updateItem->Class_subclass_id = $classSubclassExists[0]['Id'];
+                        $updateItem->Class_subclass_id = $classSubclassId;
                         $saved = $updateItem->save();
                         if(!$saved){
                             return 'Error on saving item.';
@@ -219,6 +260,13 @@ class ServiceItem extends Service
                         unset($nivelRequerido);
                         unset($nivelObjeto);
                         unset($expansion);
+                        unset($classSubclassId);
+                    }
+                    else{
+                        var_dump($objeto['Id']);
+                        var_dump($returningId);
+                        var_dump($arrayClaseSubclase);
+                        return 'Error on saving item data.';
                     }
             }
             }

@@ -33,20 +33,26 @@ class ApiController extends Controller {
 
         try{
             ini_set('memory_limit', '750M');
+            $tiempo_inicial = microtime(true);
             $url = "https://eu.api.battle.net/wow/auction/data/shen'dralar?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
             $retorno = $this->ServiceJson->getJson($url);
+            $tiempo[] =   microtime(true) - $tiempo_inicial;
             $retornoItems = $this->ServiceItem->getAllItems();
             $retornoPrices = $this->ServiceItem->getDateFactionItemPrices($retorno['fecha']);
 
             if($retorno){
                 $rawSubastas = $this->ServiceJson->getAuctions($retorno['url']);
+                $tiempo[] =   microtime(true) - $tiempo_inicial;
                 //Mismo método que getAuctions pero decodificando mediante json_decode
                 //$rawSubastas = $this->ServiceSubasta->getSubastas($retorno['url']);
 
                 if (count($rawSubastas) > 0) {
                     $retornoOwners = $this->ServiceOwner->getOwners($rawSubastas, $retorno);
+                    $tiempo[] =   microtime(true) - $tiempo_inicial;
                     $retornoSubastas = $this->ServiceSubasta->delAuctions($retornoOwners['realms']);
+                    $tiempo[] =   microtime(true) - $tiempo_inicial;
                     $retornoPrecios = $this->ServiceSubasta->getPrices($rawSubastas, $retorno, $retornoItems);
+                    $tiempo[] =   microtime(true) - $tiempo_inicial;
                     $precios = $retornoPrecios['items'];
                     $treatedSubastas = $retornoPrecios['subastas'];
                     $reinos = $retornoPrecios['reinos'];
@@ -57,23 +63,23 @@ class ApiController extends Controller {
                
                 if (isset($precios)) {
                     $preciosInsertados = $this->ServiceSubasta->putPrices($precios, $retorno['fecha'],$retornoPrices);
-
+                    $tiempo[] =   microtime(true) - $tiempo_inicial;
                 }
                 if ($preciosInsertados) {
                     $subastasReales = $this->ServiceSubasta->putSubastas($precios, $treatedSubastas);
-                    dd($subastasReales);
+                    $tiempo[] =   microtime(true) - $tiempo_inicial;
                 } else {
                     return 'No prices inserted.';
                 }
             }
             else{
-                var_dump($retorno);
                return 'Json already inserted.';
             }
         }
         catch(\Exception $e){
             echo $e->getMessage();
         }
+        var_dump($tiempo);
     }
 
     public function items() {
