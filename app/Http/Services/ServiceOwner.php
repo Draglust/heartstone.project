@@ -41,20 +41,27 @@ class ServiceOwner extends Service
         }
         if(isset($subastaOwners)){
             foreach ($subastaOwners as $keyOwner => $ownerToInsert) {
-                set_time_limit(15);
-                $url = "https://eu.api.battle.net/wow/character/{$ownerToInsert['ReinoNombre']}/{$ownerToInsert['Nombre']}?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
-                $faccionExtraida = json_decode(@file_get_contents($url), TRUE);
-                $faccion = $faccionExtraida;
-                unset($faccionExtraida);
+                set_time_limit(20);
+                try{
+                    $url = "https://eu.api.battle.net/wow/character/{$ownerToInsert['ReinoNombre']}/{$ownerToInsert['Nombre']}?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
+                    $faccionExtraida = json_decode(@file_get_contents($url), TRUE);
+                    $faccion = $faccionExtraida;
+                    unset($faccionExtraida);
 
-                if (!isset($faccion['faction'])) {
-                    $faccion['faction'] = 3;
+                    if (!isset($faccion['faction'])) {
+                        $faccion['faction'] = 3;
+                    }
+                    $ownerToInsert['Id'] = NULL;
+                    $ownerToInsert['Faccion'] = $faccion['faction'];
+                    $ownerToInsert['Realm_id'] = $arrayRealms[$ownerToInsert['ReinoNombre']];
+                    unset($ownerToInsert['ReinoNombre']);
+                   \DB::table('owner')->insert($ownerToInsert);
                 }
-                $ownerToInsert['Id'] = NULL;
-                $ownerToInsert['Faccion'] = $faccion['faction'];
-                $ownerToInsert['Realm_id'] = $arrayRealms[$ownerToInsert['ReinoNombre']];
-                unset($ownerToInsert['ReinoNombre']);
-               \DB::table('owner')->insert($ownerToInsert);
+                catch(\Exception $e){
+                    echo $url;
+                    echo $e->getMessage();
+                }
+
             }
         }
         $retorno['num_owners'] = count($subastaOwners);

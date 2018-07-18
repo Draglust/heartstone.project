@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 class ServiceItem extends Service
 {
 	public function treatItems() {
-        $objetosEncontrados = Item::NombreIsNull()->orderBy('Id')->get()->toArray();
+        $objetosEncontrados = Item::NombreIsNull()->orderBy('Id','DESC')->get()->toArray();
         $arrayClaseSubclase = array();
 
         $prevClassSubclass = ClassSubclass::all()->toArray();
@@ -124,6 +124,24 @@ class ServiceItem extends Service
                             if (strpos($salida3[1][0], 'Clásico')) {
                                 $expansion = 'Clásico';
                             }
+                            elseif (strpos($salida3[1][0], 'The Burning Crusade')) {
+                                $expansion = 'The Burning Crusade';
+                            }
+                            elseif (strpos($salida3[1][0], 'Mists of Pandaria')) {
+                                $expansion = 'Mists of Pandaria';
+                            }
+                            elseif (strpos($salida3[1][0], 'Cataclysm')) {
+                                $expansion = 'Cataclysm';
+                            }
+                            elseif (strpos($salida3[1][0], 'Legion')) {
+                                $expansion = 'Legion';
+                            }
+                            elseif (strpos($salida3[1][0], 'Warlords of Draenor')) {
+                                $expansion = 'Warlords of Draenor';
+                            }
+                            elseif (strpos($salida3[1][0], 'Wrath of the Lich King')) {
+                                $expansion = 'Wrath of the Lich King';
+                            }
                             else{
                                 preg_match_all("/World of Warcraft:(.*)\./Um", $contenido, $salida, PREG_PATTERN_ORDER);
                                 if (isset($salida[1][0])) {
@@ -156,6 +174,7 @@ class ServiceItem extends Service
                                     }
                                 }
                             }
+                            //print_r($expansion);die();
                         }
                         else {
                             preg_match_all("/World of Warcraft:(.*)\./Um", $contenido, $salida, PREG_PATTERN_ORDER);
@@ -239,6 +258,9 @@ class ServiceItem extends Service
                         }
                     }
                     $classSubclassId = $arrayClaseSubclase[$clase . '_' . $subclase];
+                    if(strlen($expansion)>100){
+                        dd($objeto['Id']);
+                    }
                     if (isset($nombre) && isset($descripcion) && isset($calidad) && isset($icono) && isset($nivelRequerido) && isset($nivelObjeto) && isset($expansion) && $classSubclassId != '' && $classSubclassId != NULL) {
                         $updateItem = Item::find($objeto['Id']);
                         $updateItem->Nombre = $nombre;

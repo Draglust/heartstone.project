@@ -26,6 +26,7 @@ class ServiceJson extends Service
         		return $jsonGuardado;
         	}
         }
+        echo $url;
         return FALSE;
     }
 
