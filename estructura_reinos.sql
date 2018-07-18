@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1:3306
--- Tiempo de generación: 17-07-2018 a las 14:32:23
+-- Tiempo de generación: 18-07-2018 a las 12:04:22
 -- Versión del servidor: 5.7.21
 -- Versión de PHP: 5.6.35
 
@@ -31,8 +31,8 @@ SET time_zone = "+00:00";
 DROP TABLE IF EXISTS `auction`;
 CREATE TABLE IF NOT EXISTS `auction` (
   `Id` bigint(20) NOT NULL,
-  `Apuesta` int(20) NOT NULL,
-  `Compra` int(20) NOT NULL,
+  `Apuesta` bigint(20) NOT NULL,
+  `Compra` bigint(20) NOT NULL,
   `Cantidad` int(20) NOT NULL,
   `Tiempo_restante` varchar(45) NOT NULL,
   `Json_id` bigint(20) UNSIGNED NOT NULL,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS `class_subclass` (
   `Subclase_id` int(11) NOT NULL,
   PRIMARY KEY (`Id`),
   UNIQUE KEY `Uni_class_subclass` (`Clase_id`,`Subclase_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=188 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=200 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -98,7 +98,7 @@ CREATE TABLE IF NOT EXISTS `json` (
   `Fecha` datetime NOT NULL,
   `Fecha_numerica` bigint(20) NOT NULL,
   PRIMARY KEY (`Id`)
-) ENGINE=MyISAM AUTO_INCREMENT=84 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=93 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -114,7 +114,7 @@ CREATE TABLE IF NOT EXISTS `owner` (
   `Realm_id` bigint(20) UNSIGNED NOT NULL,
   PRIMARY KEY (`id`),
   KEY `FK_REALM_OWNER` (`Realm_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=3079 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=3306 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
@@ -135,7 +135,7 @@ CREATE TABLE IF NOT EXISTS `price` (
   PRIMARY KEY (`Id`),
   UNIQUE KEY `UNIQUE_Item_Fecha` (`Fecha`,`Item_id`,`Faccion`),
   KEY `FK_ITEM_PRICE` (`Item_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=152730 DEFAULT CHARSET=utf8;
+) ENGINE=MyISAM AUTO_INCREMENT=177543 DEFAULT CHARSET=utf8;
 
 -- --------------------------------------------------------
 
