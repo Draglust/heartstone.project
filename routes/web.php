@@ -11,9 +11,10 @@
 |
 */
 
-Route::get('/', function () {
+/*Route::get('/', function () {
     return view('comun.layout');
-});
+});*/
+Route::get('/','ShowController@showMain');
 Route::get('/subasta','SubastaController@index');
 Route::get('/api','ApiController@index');
 Route::get('/extract','ExtractController@treatJson');

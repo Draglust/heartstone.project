@@ -262,12 +262,16 @@ class ServiceSubasta extends Service
                 $arrayIdOwners[$duenno['Nombre']] = $duenno['id'];
             }
         }
+        if(count($subastas)>0){
+            Auction::truncate();
+        }
+        $cutPrice = \Config::get('app.cut_price');
         foreach ($subastas as $keySubasta => $subasta) {
             foreach ($precios as $keyFaccion => $itemPrecio) {
                 foreach ($itemPrecio as $keyPrecio => $precio) {
                     set_time_limit(15);
                     if (isset($arrayOwners[$subasta['owner']]) && $arrayOwners[$subasta['owner']] == $keyFaccion && $subasta['item'] == $keyPrecio) {
-                        if ($subasta['buyout'] < ($precio['pmp'] * 0.40)) {
+                        if ($subasta['buyout'] < ($precio['pmp'] * $cutPrice)) {
                             if(!array_key_exists($subasta['auc'], $alreadyInserted)){
                                 $newAuction = new Auction;
                                 $newAuction->apuesta = $subasta['bid'];

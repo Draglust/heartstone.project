@@ -8,6 +8,7 @@ use App\Models\Item;
 use App\Models\Owner;
 use App\Models\ClassSubclass;
 use App\Models\Price;
+use App\Http\Services\ServiceWeb;
 use Illuminate\Http\Request;
 
 class ServiceOwner extends Service
@@ -43,8 +44,14 @@ class ServiceOwner extends Service
             foreach ($subastaOwners as $keyOwner => $ownerToInsert) {
                 set_time_limit(20);
                 try{
+
                     $url = "https://eu.api.battle.net/wow/character/{$ownerToInsert['ReinoNombre']}/{$ownerToInsert['Nombre']}?locale=es_ES&apikey=8hw8e9kun6sf8kfh2qvjzw22b9wzzjek";
-                    $faccionExtraida = json_decode(@file_get_contents($url), TRUE);
+                    //echo $url;die();
+                    $faccionExtraida = json_decode(ServiceWeb::curl($url), TRUE);
+                    /*echo $url;
+                    var_dump($faccionExtraida);
+                    die();*/
+                    //$faccionExtraida = json_decode(file_get_contents($url), TRUE);
                     $faccion = $faccionExtraida;
                     unset($faccionExtraida);
 

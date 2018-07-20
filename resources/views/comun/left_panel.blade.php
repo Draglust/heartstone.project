@@ -4,15 +4,35 @@
           </li>
 
           <li class="nav-title">
-            UI Elements
+            Búsquedas
           </li>
           <li class="nav-item nav-dropdown">
-            <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-puzzle"></i> Profesiones</a>
+            <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-puzzle"></i> Clases</a>
             <ul class="nav-dropdown-items">
-              <li class="nav-item">
-                <a class="nav-link" href="components/buttons.html"><i class="icon-puzzle"></i> Herreria</a>
-              </li>
-              <li class="nav-item">
+              @if(count($clases)>0)
+                @foreach ($clases as $keyClase => $clase)
+                  @if(count($clase)>0)
+                    <li class="nav-item nav-dropdown">
+                      <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-puzzle"></i> {{ $keyClase }}</a>
+                      <ul class="nav-dropdown-items">
+                        <li class="nav-item">
+                            <a class="nav-link" href="classesAll/{{ $keyClase }}"><i class="icon-puzzle"></i> Todos</a>
+                          </li> 
+                        @foreach($clase as $keySub =>$subclase)
+                          <li class="nav-item">
+                            <a class="nav-link" href="classes/{{ $subclase['Clase_id'] }}/{{ $subclase['Subclase_id'] }}"><i class="icon-puzzle"></i>
+                              <span clas="text-right"> {{ $subclase['Subclase_nombre'] }}</span>
+                            </a>
+                          </li>
+                        @endforeach
+                      </ul>
+                    </li>
+                  @endif
+                @endforeach
+              @endif
+            </ul>
+          </li>
+<!--               <li class="nav-item">
                 <a class="nav-link" href="components/social-buttons.html"><i class="icon-chemistry"></i> Alquimia</a>
               </li>
               <li class="nav-item">
@@ -54,8 +74,7 @@
               <li class="nav-item">
                 <a class="nav-link" href="components/tabs.html"><i class="icon-puzzle"></i> Primeros auxilios</a>
               </li>
-            </ul>
-          </li>
+             -->
           <li class="nav-item nav-dropdown">
             <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-star"></i> Icons</a>
             <ul class="nav-dropdown-items">
