@@ -26,14 +26,16 @@ class ClassSubclass extends Eloquent
 	public $timestamps = false;
 
 	protected $casts = [
-		'Class_id' => 'int',
-		'Subclass_id' => 'int',
+		'Clase_id' => 'int',
+		'Subclase_id' => 'int',
 		'Id' => 'int'
 	];
 
 	protected $fillable = [
-		'Class_id',
-		'Subclass_id'
+		'Clase_id',
+		'Clase_nombre',
+		'Subclase_id',
+		'Subclase_nombre'
 	];
 
     public function scopeClase_Subclase($query,$clase,$subclase) {
