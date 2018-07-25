@@ -13,7 +13,7 @@
                 @foreach ($clases as $keyClase => $clase)
                   @if(count($clase)>0)
                     <li class="nav-item nav-dropdown">
-                      <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-puzzle"></i> {{ $keyClase }}</a>
+                      <a class="nav-link nav-dropdown-toggle" href="#"><i class="icon-puzzle"></i> {{ $nombres[$keyClase] }}</a>
                       <ul class="nav-dropdown-items">
                         <li class="nav-item">
                             <a class="nav-link" href="classesAll/{{ $keyClase }}"><i class="icon-puzzle"></i> Todos</a>

@@ -1,7 +1,4 @@
-<script>
-  var requireJS = [];
-  loadJS(requireJS, "js/views/main.js");
-</script>
+
 
 <div class="animated fadeIn">
   <div class="row">
@@ -18,7 +15,7 @@
               <a class="dropdown-item" href="#">Something else here</a>
             </div>
           </div>
-          <h4 class="mb-0">9.823</h4>
+          <h4 class="mb-0">9.821</h4>
           <p>Members online</p>
         </div>
         <div class="chart-wrapper px-3" style="height:70px;">
@@ -34,7 +31,7 @@
           <button type="button" class="btn btn-transparent p-0 float-right">
             <i class="icon-location-pin"></i>
           </button>
-          <h4 class="mb-0">9.823</h4>
+          <h4 class="mb-0">9.822</h4>
           <p>Members online</p>
         </div>
         <div class="chart-wrapper px-3" style="height:70px;">
@@ -80,7 +77,7 @@
               <a class="dropdown-item" href="#">Something else here</a>
             </div>
           </div>
-          <h4 class="mb-0">9.823</h4>
+          <h4 class="mb-0">9.824</h4>
           <p>Members online</p>
         </div>
         <div class="chart-wrapper px-3" style="height:70px;">
@@ -96,7 +93,10 @@
     <div class="card-body">
       <div class="row">
         <div class="col-sm-5">
-          <h4 class="card-title mb-0">Traffic</h4>
+          <h4 class="card-title mb-0">@if(!empty($clase))
+                                        {{ $clase }}
+                                      @endif
+          </h4>
           <div class="small text-muted">November 2015</div>
         </div>
         <!--/.col-->
@@ -871,3 +871,11 @@
   </div>
   <!--/.row-->
 </div>
+
+<script>
+$( document ).ready(function() {
+  var requireJS = [];
+  loadJS(requireJS, "js/views/main.js");
+});
+  
+</script>

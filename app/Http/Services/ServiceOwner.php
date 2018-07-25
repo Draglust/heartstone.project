@@ -23,13 +23,17 @@ class ServiceOwner extends Service
                 $arrayOwners[$duenno['Nombre']] = $duenno['Faccion'];
             }
         }
-
+        
         $todosRealms = Realm::all()->toArray();
         foreach($todosRealms as $reino){
             $arrayRealms[$reino['Nombre']] = $reino['Id'];
         }
 
         foreach ($subastas as $key => $subasta) {
+            if($subasta['owner'] == '???'){
+                unset($subasta);
+                continue;
+            }
             $owner['Nombre'] = $subasta['owner'];
             $owner['ReinoNombre'] = $subasta['ownerRealm'];
             if(!in_array($arrayRealms[$owner['ReinoNombre']], $retorno['realms'])){
@@ -40,6 +44,7 @@ class ServiceOwner extends Service
                 unset($owner);
             }
         }
+        
         if(isset($subastaOwners)){
             foreach ($subastaOwners as $keyOwner => $ownerToInsert) {
                 set_time_limit(20);
