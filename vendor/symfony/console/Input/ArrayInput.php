@@ -81,7 +81,7 @@ class ArrayInput extends Input
 
         foreach ($this->parameters as $k => $v) {
             if ($onlyParams && ('--' === $k || (is_int($k) && '--' === $v))) {
-                return false;
+                return $default;
             }
 
             if (is_int($k)) {
@@ -114,7 +114,7 @@ class ArrayInput extends Input
                     $params[] = $param.('' != $val ? '='.$this->escapeToken($val) : '');
                 }
             } else {
-                $params[] = is_array($val) ? array_map(array($this, 'escapeToken'), $val) : $this->escapeToken($val);
+                $params[] = is_array($val) ? implode(' ', array_map(array($this, 'escapeToken'), $val)) : $this->escapeToken($val);
             }
         }
 
